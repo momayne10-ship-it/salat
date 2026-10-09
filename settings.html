@@ -1,0 +1,1788 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><script>(function(){var w=Math.max(window.innerWidth||0,document.documentElement.clientWidth||0);if(w>=768){document.documentElement.innerHTML='<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>صلاتي</title><style>body{margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0d3b2e;color:#faf7f0;font-family:sans-serif;text-align:center;padding:20px}.\boxed{max-width:320px}.icon{font-size:64px;margin-bottom:16px}.msg{font-size:20px;line-height:1.8}.sub{font-size:14px;color:#c9a227;margin-top:12px}</style></head><body><div class="box"><div class="icon">&#128241;</div><div class="msg">التطبيق يعمل على الهاتف فقط</div><div class="sub">الرجاء فتح الرابط من هاتفك</div></div></body>'}})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الإعدادات — صلاتي</title>
+
+    <!-- خطوط بأسلوب المصحف الكريم: Amiri Quran + Amiri -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <!-- أيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- SweetAlert2 للنوافذ الأنيقة -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+
+    <!-- مولّد رموز QR -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" defer></script>
+
+    <style>
+        :root {
+            --primary: #0d3b2e;
+            --primary-light: #1a5c48;
+            --primary-dark: #072418;
+            --gold: #c9a227;
+            --gold-light: #e6c458;
+            --cream: #faf7f0;
+            --cream-dark: #f0ead8;
+            --text-dark: #1a1a1a;
+            --text-light: #7a7a7a;
+            --white: #ffffff;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-md: 0 8px 24px rgba(0,0,0,0.1);
+            --shadow-lg: 0 16px 48px rgba(0,0,0,0.15);
+            --radius: 16px;
+            --radius-lg: 24px;
+            --radius-pill: 999px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 86px;
+        }
+
+        body {
+            font-family: 'Amiri Quran', 'Amiri', 'Tajawal', serif;
+            background: var(--cream);
+            color: var(--text-dark);
+            min-height: 100vh;
+            line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .bg-pattern {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            opacity: 0.04;
+            background-image:
+                radial-gradient(circle at 25% 25%, var(--primary) 1px, transparent 1px),
+                radial-gradient(circle at 75% 75%, var(--gold) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background:
+                radial-gradient(ellipse at 0% 0%, rgba(13, 59, 46, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 100% 100%, rgba(201, 162, 39, 0.08) 0%, transparent 50%);
+        }
+
+        /* ===== شريط الهيدر ===== */
+        .top-bar {
+            --header-h: 74px;
+            background: transparent;
+            padding: 16px 20px;
+            box-shadow: none;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid transparent;
+            transition: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .top-bar.is-scrolled {
+            background: rgba(255, 255, 255, 0.82);
+            -webkit-backdrop-filter: blur(14px) saturate(1.5);
+            backdrop-filter: blur(14px) saturate(1.5);
+            box-shadow: var(--shadow-sm);
+            border-bottom-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .top-bar-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--gold-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            box-shadow: 0 4px 14px rgba(13, 59, 46, 0.28);
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .brand-text strong {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .brand-text small {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        .menu-btn {
+            width: 42px;
+            height: 42px;
+            border: 1.5px solid rgba(13, 59, 46, 0.15);
+            border-radius: 50%;
+            background: transparent;
+            color: var(--primary);
+            font-size: 1rem;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .menu-btn:hover,
+        .menu-btn:focus-visible {
+            background: rgba(13, 59, 46, 0.06);
+            border-color: rgba(13, 59, 46, 0.3);
+            color: var(--primary-dark);
+            outline: none;
+        }
+
+        .site-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .site-nav-list {
+            display: flex;
+            gap: 1.4rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .site-nav-link {
+            display: inline-block;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: rgba(13, 59, 46, 0.7);
+            text-decoration: none;
+            padding: 0.4rem 0;
+            transition: color 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .site-nav-link:hover,
+        .site-nav-link.is-active {
+            color: var(--primary-dark);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        /* ===== المحتوى ===== */
+        .main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 26px 20px 50px;
+        }
+
+        .location-header {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .location-header h1 {
+            font-family: 'Amiri Quran', 'Amiri', 'Tajawal', serif;
+            font-size: 2.6rem;
+            font-weight: 900;
+            color: var(--primary-dark);
+            line-height: 1.2;
+            margin-bottom: 6px;
+        }
+
+        .location-header h1 i {
+            color: var(--gold);
+            font-size: 1.7rem;
+            margin-left: 8px;
+        }
+
+        .location-header .country {
+            font-size: 1rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        /* ===== لوحات الإعداد ===== */
+        .panel {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 20px 22px 18px;
+            margin-bottom: 22px;
+            box-shadow: var(--shadow-md);
+            border: 1.5px solid rgba(201, 162, 39, 0.45);
+            position: relative;
+        }
+
+        .panel::before {
+            content: '';
+            position: absolute;
+            inset: 7px;
+            border: 1px solid rgba(13, 59, 46, 0.10);
+            border-radius: calc(var(--radius-lg) - 7px);
+            pointer-events: none;
+        }
+
+        .panel-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(201, 162, 39, 0.28);
+        }
+
+        .panel-head .ph-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--gold-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.88rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(13, 59, 46, 0.22);
+        }
+
+        .panel-head h3 {
+            font-size: 1.08rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            min-height: 58px;
+            padding: 9px 4px;
+            border-bottom: 1px solid rgba(13, 59, 46, 0.08);
+        }
+
+        .row:last-of-type {
+            border-bottom: none;
+        }
+
+        .row-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .row-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1.4;
+        }
+
+        .row-sub {
+            font-size: 0.76rem;
+            color: var(--text-light);
+            line-height: 1.5;
+        }
+
+        .row-value {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--primary);
+            flex-shrink: 0;
+            max-width: 45%;
+            text-align: left;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* المفتاح الكبير */
+        .big-sw {
+            width: 52px;
+            height: 29px;
+            border: none;
+            border-radius: 999px;
+            background: #d9d4c6;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.25s ease;
+            flex-shrink: 0;
+        }
+
+        .big-sw .knob {
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 23px;
+            height: 23px;
+            border-radius: 50%;
+            background: var(--white);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            transition: transform 0.25s ease;
+        }
+
+        .big-sw.on {
+            background: var(--primary);
+        }
+
+        .big-sw.on .knob {
+            transform: translateX(-23px);
+        }
+
+        .note {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            background: var(--cream);
+            border: 1px dashed rgba(201, 162, 39, 0.35);
+            border-radius: 12px;
+            padding: 10px 12px;
+            margin-top: 6px;
+        }
+
+        .note i {
+            color: var(--gold);
+            margin-top: 4px;
+        }
+
+        /* ===== الأزرار ===== */
+        .btn-gold {
+            height: 40px;
+            min-width: 100px;
+            padding: 0 22px;
+            border: none;
+            border-radius: var(--radius-pill);
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            color: var(--primary-dark);
+            font-family: 'Amiri Quran', 'Amiri', 'Tajawal', serif;
+            font-size: 0.88rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-block;
+            line-height: 40px;
+            text-align: center;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .btn-gold i {
+            font-size: 0.85rem;
+            vertical-align: -0.125em;
+            margin-left: 6px;
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(201, 162, 39, 0.4);
+        }
+
+        .btn-gold:disabled {
+            opacity: 0.55;
+            cursor: default;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-outline {
+            height: 40px;
+            min-width: 100px;
+            padding: 0 22px;
+            border: 1.5px solid rgba(13, 59, 46, 0.28);
+            border-radius: var(--radius-pill);
+            background: transparent;
+            color: var(--primary);
+            font-family: 'Amiri Quran', 'Amiri', 'Tajawal', serif;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-block;
+            line-height: 40px;
+            text-align: center;
+            white-space: nowrap;
+            flex-shrink: 0;
+            text-decoration: none;
+        }
+
+        .btn-outline i {
+            font-size: 0.85rem;
+            vertical-align: -0.125em;
+            margin-left: 6px;
+        }
+
+        .btn-outline:hover {
+            background: rgba(13, 59, 46, 0.06);
+            border-color: var(--primary);
+        }
+
+        .btn-outline.danger {
+            color: #a33;
+            border-color: rgba(163, 51, 51, 0.35);
+        }
+
+        .btn-outline.danger:hover {
+            background: rgba(163, 51, 51, 0.07);
+        }
+
+        .btn-outline[hidden] {
+            display: none;
+        }
+
+        /* ===== شريط البحث ===== */
+        .search-wrap {
+            position: relative;
+            margin: 10px 0;
+        }
+
+        .search-wrap i {
+            position: absolute;
+            top: 50%;
+            right: 14px;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 42px;
+            border: 1.5px solid rgba(13, 59, 46, 0.18);
+            border-radius: var(--radius-pill);
+            background: var(--cream);
+            padding: 0 40px 0 16px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--gold);
+            background: var(--white);
+        }
+
+        /* ===== قائمة المدن ===== */
+        .city-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 340px;
+            overflow-y: auto;
+            padding: 2px;
+        }
+
+        .city-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .city-list::-webkit-scrollbar-thumb {
+            background: rgba(13, 59, 46, 0.2);
+            border-radius: 3px;
+        }
+
+        .city-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
+            height: 50px;
+            padding: 0 14px;
+            border: 1.5px solid rgba(13, 59, 46, 0.10);
+            border-radius: var(--radius-pill);
+            background: var(--cream);
+            cursor: pointer;
+            font-family: inherit;
+            text-align: right;
+            transition: var(--transition);
+            overflow: hidden;
+        }
+
+        .city-item:hover {
+            border-color: rgba(13, 59, 46, 0.28);
+            background: var(--white);
+        }
+
+        .city-item.on {
+            border-color: var(--gold);
+            background: var(--white);
+            box-shadow: 0 4px 12px rgba(201, 162, 39, 0.16);
+        }
+
+        .city-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            line-height: 1.3;
+            overflow: hidden;
+        }
+
+        .city-name {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .city-country {
+            font-size: 0.72rem;
+            color: var(--text-light);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .city-item .fa-check {
+            color: var(--gold);
+            font-size: 0.85rem;
+            visibility: hidden;
+        }
+
+        .city-item.on .fa-check {
+            visibility: visible;
+        }
+
+        .empty-msg {
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            padding: 18px 0;
+        }
+
+        /* ===== عنوان القسم ===== */
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin: 30px 0 16px;
+        }
+
+        .section-title i {
+            color: var(--gold);
+        }
+
+        .section-title::before,
+        .section-title::after {
+            content: '';
+            height: 1.5px;
+            width: 46px;
+            background: linear-gradient(to left, transparent, var(--gold));
+        }
+
+        .section-title::after {
+            background: linear-gradient(to right, transparent, var(--gold));
+        }
+
+        /* ===== معلومات حول ===== */
+        .about-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            padding: 12px 0 4px;
+        }
+
+        .about-card {
+            background: var(--cream);
+            border: 1px solid rgba(13, 59, 46, 0.10);
+            border-radius: var(--radius);
+            padding: 14px;
+            text-align: center;
+        }
+
+        .about-card i {
+            font-size: 1.2rem;
+            color: var(--gold);
+            margin-bottom: 6px;
+        }
+
+        .about-card .ac-title {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .about-card .ac-sub {
+            font-size: 0.72rem;
+            color: var(--text-light);
+        }
+
+        /* ===== التذييل ===== */
+        .footer {
+            text-align: center;
+            padding: 28px 20px 34px;
+            color: var(--text-light);
+        }
+
+        .footer-verse {
+            font-family: 'Amiri Quran', 'Amiri', serif;
+            font-size: 1.05rem;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .footer-text {
+            font-size: 0.78rem;
+        }
+
+        /* ===== التنبيه العلوي ===== */
+        .toast {
+            position: fixed;
+            top: 84px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-16px);
+            opacity: 0;
+            visibility: hidden;
+            background: var(--primary-dark);
+            color: var(--white);
+            padding: 11px 22px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.4s ease, opacity 0.4s ease, visibility 0.4s ease;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            max-width: 92vw;
+            white-space: nowrap;
+        }
+
+        .toast span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .toast i {
+            color: var(--gold-light);
+        }
+
+        /* ===== نافذة SweetAlert2 ===== */
+        .swal2-popup {
+            font-family: 'Amiri Quran', 'Amiri', 'Tajawal', serif !important;
+            border-radius: 22px !important;
+            border: 1.5px solid rgba(201, 162, 39, 0.45);
+        }
+
+        .swal2-confirm,
+        .swal2-cancel {
+            border-radius: 50px !important;
+            font-family: 'Amiri Quran', 'Amiri', 'Tajawal', serif !important;
+            font-weight: 700 !important;
+            padding: 8px 22px !important;
+        }
+
+        /* ===== المشاركة و QR ===== */
+        .share-socials {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 10px 0 2px;
+        }
+
+        .share-social {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(13, 59, 46, 0.18);
+            background: var(--cream);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .share-social:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 6px 14px rgba(13, 59, 46, 0.15);
+        }
+
+        .share-social.wa:hover { color: #25d366; border-color: #25d366; }
+        .share-social.tg:hover { color: #229ed9; border-color: #229ed9; }
+        .share-social.fb:hover { color: #1877f2; border-color: #1877f2; }
+        .share-social.ig:hover { color: #e1306c; border-color: #e1306c; }
+
+        .qr-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 0;
+        }
+
+        .qr-box {
+            background: var(--white);
+            padding: 14px;
+            border-radius: 18px;
+            border: 1.5px solid rgba(201, 162, 39, 0.45);
+            box-shadow: var(--shadow-md);
+        }
+
+        .qr-box img,
+        .qr-box canvas {
+            display: block;
+            border-radius: 8px;
+        }
+
+        .qr-url {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            direction: ltr;
+            max-width: 90%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ===== التجاوب ===== */
+        @media (max-width: 860px) {
+            .menu-btn {
+                display: flex;
+            }
+
+            .site-nav {
+                position: fixed;
+                top: calc(var(--header-h) + 4px);
+                left: 1rem;
+                width: 85%;
+                max-width: 300px;
+                display: block;
+                background: linear-gradient(165deg, rgba(13, 59, 46, 0.97), rgba(8, 40, 31, 0.98));
+                -webkit-backdrop-filter: blur(30px);
+                backdrop-filter: blur(30px);
+                border-radius: 1.5rem;
+                border: 1px solid rgba(201, 162, 39, 0.22);
+                padding: 1.2rem 0;
+                box-shadow: 0 25px 60px rgba(13, 59, 46, 0.35);
+                transform: scale(0.9);
+                transform-origin: top left;
+                opacity: 0;
+                pointer-events: none;
+                transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                z-index: 999;
+                max-height: calc(100vh - var(--header-h) - 2rem);
+                overflow-y: auto;
+            }
+
+            .site-nav.open {
+                transform: scale(1);
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            .site-nav-list {
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 0 0.5rem;
+            }
+
+            .site-nav-link {
+                display: block;
+                padding: 0.8rem 1.2rem;
+                font-size: 1rem;
+                border-radius: 9999px;
+                background: rgba(255, 255, 255, 0.06);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                color: rgba(255, 255, 255, 0.82);
+                transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            }
+
+            .site-nav-link:hover,
+            .site-nav-link.is-active {
+                background: rgba(201, 162, 39, 0.16);
+                border-color: rgba(201, 162, 39, 0.4);
+                color: var(--white);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .top-bar {
+                --header-h: 66px;
+                padding: 12px 14px;
+            }
+
+            .brand-text {
+                display: none;
+            }
+
+            .location-header h1 {
+                font-size: 2rem;
+            }
+
+            .location-header h1 i {
+                font-size: 1.3rem;
+            }
+
+            .panel {
+                padding: 16px 14px 13px;
+            }
+
+            .toast {
+                top: 78px;
+                font-size: 0.8rem;
+                padding: 10px 16px;
+            }
+
+            .row {
+                flex-wrap: wrap;
+            }
+
+            .row-value {
+                max-width: 100%;
+            }
+        }
+    </style>
+
+    <!-- PWA -->
+    <meta name="theme-color" content="#0d3b2e">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="صلاتي">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" sizes="32x32" href="favicon.ico">
+</head>
+
+<body>
+    <div class="bg-pattern"></div>
+    <div class="bg-gradient"></div>
+
+    <!-- الهيدر -->
+    <div class="top-bar">
+        <div class="top-bar-inner">
+            <a class="brand" href="index.html">
+                <span class="brand-icon"><i class="fas fa-moon"></i></span>
+                <span class="brand-text">
+                    <strong>صلاتي</strong>
+                    <small>مواقيت الصلاة</small>
+                </span>
+            </a>
+
+            <nav class="site-nav" id="siteNav">
+                <ul class="site-nav-list">
+                    <li><a href="index.html" class="site-nav-link">الرئيسية</a></li>
+                    <li><a href="calendar.html" class="site-nav-link">التقويم</a></li>
+                    <li><a href="adhan.html" class="site-nav-link">الأذان</a></li>
+                    <li><a href="qibla.html" class="site-nav-link">القبلة</a></li>
+                    <li><a href="reminders.html" class="site-nav-link">التذكيرات</a></li>
+                    <li><a href="settings.html" class="site-nav-link is-active">الإعدادات</a></li>
+                </ul>
+            </nav>
+
+            <div class="header-actions">
+                <button class="menu-btn" id="menuBtn" type="button" aria-label="تبديل القائمة" aria-expanded="false">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- المحتوى -->
+    <main class="main">
+
+        <div class="location-header">
+            <h1>
+                <i class="fas fa-gear"></i>
+                الإعدادات
+            </h1>
+            <div class="country">تحكم شامل في التطبيق</div>
+        </div>
+
+        <!-- الموقع -->
+        <section class="panel">
+            <div class="panel-head">
+                <span class="ph-icon"><i class="fas fa-location-dot"></i></span>
+                <h3>الموقع</h3>
+            </div>
+
+            <div class="row">
+                <div class="row-text">
+                    <div class="row-title">موقعك الحالي</div>
+                    <div class="row-sub">يُستخدم في كل صفحات التطبيق</div>
+                </div>
+                <div class="row-value" id="placeName">---</div>
+            </div>
+
+            <div class="row">
+                <div class="row-text">
+                    <div class="row-title">تحديد موقعي تلقائيًا</div>
+                    <div class="row-sub">بواسطة GPS بدقة عالية</div>
+                </div>
+                <button class="btn-gold" id="gpsBtn" type="button">
+                    <i class="fas fa-location-crosshairs"></i>
+                    تحديد
+                </button>
+            </div>
+
+            <div class="row">
+                <div class="row-text">
+                    <div class="row-title">اختيار مدينة يدويًا</div>
+                    <div class="row-sub">ابحث في قائمة المدن المدعومة</div>
+                </div>
+                <button class="btn-outline" id="cityToggle" type="button">
+                    <i class="fas fa-city"></i>
+                    اختيار
+                </button>
+            </div>
+
+            <div id="cityBox" hidden>
+                <div class="search-wrap">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <input type="text" class="search-input" id="citySearch" placeholder="ابحث عن مدينة أو دولة..." autocomplete="off">
+                </div>
+                <div class="city-list" id="cityList"></div>
+            </div>
+        </section>
+
+        <!-- التذكيرات -->
+        <div class="section-title">
+            <i class="fas fa-bell"></i>
+            التذكيرات
+        </div>
+
+        <section class="panel">
+            <div class="panel-head">
+                <span class="ph-icon"><i class="fas fa-bell"></i></span>
+                <h3>إعدادات التذكير</h3>
+            </div>
+
+            <div class="row">
+                <div class="row-text">
+                    <div class="row-title">التذكيرات قبل الصلاة</div>
+                    <div class="row-sub">المفتاح الرئيسي لكل التذكيرات</div>
+                </div>
+                <button class="big-sw" id="remSwitch" type="button" role="switch" aria-checked="false" aria-label="تفعيل التذكيرات">
+                    <span class="knob"></span>
+                </button>
+            </div>
+
+            <div class="row">
+                <div class="row-text">
+                    <div class="row-title">إشعارات المتصفح</div>
+                    <div class="row-sub" id="notifState">غير مفعّلة</div>
+                </div>
+                <button class="btn-gold" id="notifBtn" type="button">
+                    <i class="fas fa-bell"></i>
+                    تفعيل
+                </button>
+            </div>
+
+            <div class="row">
+                <div class="row-text">
+                    <div class="row-title">تجربة التنبيه</div>
+                    <div class="row-sub">شغّل إشعار المتصفح الآن</div>
+                </div>
+                <button class="btn-outline" id="testBtn" type="button">
+                    <i class="fas fa-play"></i>
+                    تجربة
+                </button>
+            </div>
+
+            <div class="row">
+                <div class="row-text">
+                    <div class="row-title">خيارات متقدمة</div>
+                    <div class="row-sub">الأصوات، الشرائح، التكرار</div>
+                </div>
+                <a class="btn-outline" href="reminders.html">
+                    <i class="fas fa-sliders"></i>
+                    فتح صفحة
+                </a>
+            </div>
+
+            <p class="note">
+                <i class="fas fa-circle-info"></i>
+                <span>يعمل التذكير أثناء فتح الصفحة في المتصفح — أبقِ التبويب مفتوحًا.</span>
+            </p>
+        </section>
+
+        <!-- المشاركة -->
+        <div class="section-title">
+            <i class="fas fa-share-nodes"></i>
+            المشاركة
+        </div>
+
+        <section class="panel">
+            <div class="panel-head">
+                <span class="ph-icon"><i class="fas fa-share-nodes"></i></span>
+                <h3>شارك التطبيق</h3>
+            </div>
+
+            <div class="row">
+                <div class="row-text">
+                    <div class="row-title">رابط التطبيق</div>
+                    <div class="row-sub" id="shareUrlText">---</div>
+                </div>
+                <button class="btn-outline" id="copyLinkBtn" type="button">
+                    <i class="fas fa-copy"></i>
+                    نسخ
+                </button>
+            </div>
+
+            <div class="row">
+                <div class="row-text">
+                    <div class="row-title">مشاركة مباشرة</div>
+                    <div class="row-sub">أرسل الرابط لأصدقائك من أي تطبيق</div>
+                </div>
+                <button class="btn-gold" id="shareBtn" type="button">
+                    <i class="fas fa-share-nodes"></i>
+                    مشاركة
+                </button>
+            </div>
+
+            <div class="row">
+                <div class="row-text">
+                    <div class="row-title">رمز QR</div>
+                    <div class="row-sub">امسح الرمز للوصول السريع</div>
+                </div>
+                <button class="btn-outline" id="qrBtn" type="button">
+                    <i class="fas fa-qrcode"></i>
+                    توليد
+                </button>
+            </div>
+
+            <div class="share-socials">
+                <a class="share-social wa" id="shareWa" href="#" target="_blank" rel="noopener" title="واتساب"><i class="fab fa-whatsapp"></i></a>
+                <a class="share-social tg" id="shareTg" href="#" target="_blank" rel="noopener" title="تيليغرام"><i class="fab fa-telegram"></i></a>
+                <a class="share-social fb" id="shareFb" href="#" target="_blank" rel="noopener" title="فيسبوك"><i class="fab fa-facebook-f"></i></a>
+                <a class="share-social ig" id="shareIg" href="#" target="_blank" rel="noopener" title="انستغرام"><i class="fab fa-instagram"></i></a>
+                <a class="share-social" id="shareMail" href="#" target="_blank" rel="noopener" title="البريد"><i class="fas fa-envelope"></i></a>
+            </div>
+        </section>
+
+        <!-- البيانات والخصوصية -->
+        <div class="section-title">
+            <i class="fas fa-shield-halved"></i>
+            البيانات والخصوصية
+        </div>
+
+        <section class="panel">
+            <div class="panel-head">
+                <span class="ph-icon"><i class="fas fa-database"></i></span>
+                <h3>إدارة البيانات</h3>
+            </div>
+
+            <div class="row">
+                <div class="row-text">
+                    <div class="row-title">مسح ذاكرة المواقيت</div>
+                    <div class="row-sub">حذف الكاش المؤقت للأوقات المحفوظة</div>
+                </div>
+                <button class="btn-outline" id="clearCacheBtn" type="button">
+                    <i class="fas fa-broom"></i>
+                    مسح
+                </button>
+            </div>
+
+            <div class="row">
+                <div class="row-text">
+                    <div class="row-title">إعادة تعيين الموقع</div>
+                    <div class="row-sub">حذف الموقع المحفوظ والعودة للمدينة الافتراضية</div>
+                </div>
+                <button class="btn-outline" id="resetLocBtn" type="button">
+                    <i class="fas fa-rotate-left"></i>
+                    إعادة تعيين
+                </button>
+            </div>
+
+            <div class="row">
+                <div class="row-text">
+                    <div class="row-title">حذف كل البيانات</div>
+                    <div class="row-sub">حذف الإعدادات والأصوات المرفوعة نهائيًا</div>
+                </div>
+                <button class="btn-outline danger" id="wipeBtn" type="button">
+                    <i class="fas fa-trash"></i>
+                    حذف الكل
+                </button>
+            </div>
+        </section>
+
+        <!-- حول -->
+        <div class="section-title">
+            <i class="fas fa-circle-info"></i>
+            حول التطبيق
+        </div>
+
+        <section class="panel">
+            <div class="panel-head">
+                <span class="ph-icon"><i class="fas fa-moon"></i></span>
+                <h3>صلاتي — مواقيت الصلاة</h3>
+            </div>
+
+            <div class="about-grid">
+                <div class="about-card">
+                    <i class="fas fa-code-branch"></i>
+                    <div class="ac-title">الإصدار</div>
+                    <div class="ac-sub">1.0.0</div>
+                </div>
+                <div class="about-card">
+                    <i class="fas fa-mosque"></i>
+                    <div class="ac-title">حساب المواقيت</div>
+                    <div class="ac-sub">محلي دقيق</div>
+                </div>
+                <div class="about-card">
+                    <i class="fas fa-lock"></i>
+                    <div class="ac-title">الخصوصية</div>
+                    <div class="ac-sub">بياناتك على جهازك فقط</div>
+                </div>
+                <div class="about-card">
+                    <i class="fas fa-wifi"></i>
+                    <div class="ac-title">الاتصال</div>
+                    <div class="ac-sub">يُستخدم للأذان فقط</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <div class="footer-verse">﴿ فَاذْكُرُونِي أَذْكُرْكُمْ وَاشْكُرُوا لِي ﴾</div>
+        <div class="footer-text">© 2026 جميع الحقوق محفوظة — طور من طرف GM SOFT</div>
+    </footer>
+
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage"></span>
+    </div>
+
+    <script>
+        // ===== مفاتيح التخزين =====
+        const STORE_KEY = 'salat_qibla_location';
+        const K_REM = 'salat_reminders';
+        const K_LAST = 'salat_adhan_lastplayed';
+        const K_CACHE = 'salat_adhan_times_cache';
+
+        const $ = id => document.getElementById(id);
+
+        // ===== بيانات المدن =====
+        const cities = [
+            { key: 'algiers',     city: 'الجزائر',      country: 'الجزائر',    lat: 36.7538, lng: 3.0588,   tz: 1 },
+            { key: 'oran',        city: 'وهران',        country: 'الجزائر',    lat: 35.6969, lng: -0.6331,  tz: 1 },
+            { key: 'constantine', city: 'قسنطينة',      country: 'الجزائر',    lat: 36.3650, lng: 6.6147,   tz: 1 },
+            { key: 'annaba',      city: 'عنابة',        country: 'الجزائر',    lat: 36.9000, lng: 7.7667,   tz: 1 },
+            { key: 'setif',       city: 'سطيف',         country: 'الجزائر',    lat: 36.1911, lng: 5.4137,   tz: 1 },
+            { key: 'cairo',       city: 'القاهرة',      country: 'مصر',        lat: 30.0444, lng: 31.2357,  tz: 2 },
+            { key: 'alexandria',  city: 'الإسكندرية',   country: 'مصر',        lat: 31.2001, lng: 29.9187,  tz: 2 },
+            { key: 'makkah',      city: 'مكة المكرمة',  country: 'السعودية',   lat: 21.4225, lng: 39.8262,  tz: 3 },
+            { key: 'madinah',     city: 'المدينة المنورة', country: 'السعودية', lat: 24.4672, lng: 39.6111, tz: 3 },
+            { key: 'riyadh',      city: 'الرياض',       country: 'السعودية',   lat: 24.7136, lng: 46.6753,  tz: 3 },
+            { key: 'jeddah',      city: 'جدة',          country: 'السعودية',   lat: 21.4858, lng: 39.1925,  tz: 3 },
+            { key: 'dubai',       city: 'دبي',          country: 'الإمارات',   lat: 25.2048, lng: 55.2708,  tz: 4 },
+            { key: 'abudhabi',    city: 'أبوظبي',       country: 'الإمارات',   lat: 24.4539, lng: 54.3773,  tz: 4 },
+            { key: 'doha',        city: 'الدوحة',       country: 'قطر',        lat: 25.2854, lng: 51.5310,  tz: 3 },
+            { key: 'kuwait',      city: 'الكويت',       country: 'الكويت',     lat: 29.3759, lng: 47.9774,  tz: 3 },
+            { key: 'manama',      city: 'المنامة',      country: 'البحرين',    lat: 26.2285, lng: 50.5860,  tz: 3 },
+            { key: 'muscat',      city: 'مسقط',         country: 'عُمان',      lat: 23.5880, lng: 58.3829,  tz: 4 },
+            { key: 'amman',       city: 'عمّان',        country: 'الأردن',     lat: 31.9454, lng: 35.9284,  tz: 3 },
+            { key: 'beirut',      city: 'بيروت',        country: 'لبنان',      lat: 33.8938, lng: 35.5018,  tz: 3 },
+            { key: 'damascus',    city: 'دمشق',         country: 'سوريا',      lat: 33.5138, lng: 36.2765,  tz: 3 },
+            { key: 'baghdad',     city: 'بغداد',        country: 'العراق',     lat: 33.3152, lng: 44.3661,  tz: 3 },
+            { key: 'khartoum',    city: 'الخرطوم',      country: 'السودان',    lat: 15.5007, lng: 32.5599,  tz: 2 },
+            { key: 'tunis',       city: 'تونس',         country: 'تونس',       lat: 36.8065, lng: 10.1815,  tz: 1 },
+            { key: 'casablanca',  city: 'الدار البيضاء', country: 'المغرب',    lat: 33.5731, lng: -7.5898,  tz: 1 },
+            { key: 'rabat',       city: 'الرباط',       country: 'المغرب',     lat: 34.0209, lng: -6.8416,  tz: 1 },
+            { key: 'nouakchott',  city: 'نواكشوط',      country: 'موريتانيا',  lat: 18.0735, lng: -15.9582, tz: 0 },
+            { key: 'istanbul',    city: 'إسطنبول',      country: 'تركيا',      lat: 41.0082, lng: 28.9784,  tz: 3 },
+            { key: 'london',      city: 'لندن',         country: 'بريطانيا',   lat: 51.5074, lng: -0.1278,  tz: 0 },
+            { key: 'paris',       city: 'باريس',        country: 'فرنسا',      lat: 48.8566, lng: 2.3522,   tz: 1 },
+            { key: 'newyork',     city: 'نيويورك',      country: 'أمريكا',     lat: 40.7128, lng: -74.0060, tz: -5 },
+            { key: 'jerusalem',   city: 'القدس',        country: 'فلسطين',    lat: 31.7683, lng: 35.2137,  tz: 3 },
+            { key: 'islamabad',   city: 'إسلام آباد',   country: 'باكستان',    lat: 33.6844, lng: 73.0479,  tz: 5 },
+            { key: 'delhi',       city: 'نيودلهي',      country: 'الهند',      lat: 28.6139, lng: 77.2090,  tz: 5.5 },
+            { key: 'jakarta',     city: 'جاكرتا',       country: 'إندونيسيا',  lat: -6.2088, lng: 106.8456, tz: 7 },
+            { key: 'dz01', city: 'أدرار', country: 'الجزائر', lat: 27.871, lng: -0.293, tz: 1 },
+            { key: 'dz02', city: 'الشلف', country: 'الجزائر', lat: 36.164, lng: 1.332, tz: 1 },
+            { key: 'dz03', city: 'الأغواط', country: 'الجزائر', lat: 33.805, lng: 2.863, tz: 1 },
+            { key: 'dz04', city: 'أم البواقي', country: 'الجزائر', lat: 35.875, lng: 7.113, tz: 1 },
+            { key: 'dz05', city: 'باتنة', country: 'الجزائر', lat: 35.556, lng: 6.174, tz: 1 },
+            { key: 'dz06', city: 'بجاية', country: 'الجزائر', lat: 36.751, lng: 5.078, tz: 1 },
+            { key: 'dz07', city: 'بسكرة', country: 'الجزائر', lat: 34.848, lng: 5.728, tz: 1 },
+            { key: 'dz08', city: 'بشار', country: 'الجزائر', lat: 31.617, lng: -2.216, tz: 1 },
+            { key: 'dz09', city: 'البليدة', country: 'الجزائر', lat: 36.47, lng: 2.828, tz: 1 },
+            { key: 'dz10', city: 'البويرة', country: 'الجزائر', lat: 36.374, lng: 3.905, tz: 1 },
+            { key: 'dz11', city: 'تمنراست', country: 'الجزائر', lat: 22.785, lng: 5.523, tz: 1 },
+            { key: 'dz12', city: 'تبسة', country: 'الجزائر', lat: 35.404, lng: 8.124, tz: 1 },
+            { key: 'dz13', city: 'تلمسان', country: 'الجزائر', lat: 34.883, lng: -1.31, tz: 1 },
+            { key: 'dz14', city: 'تيارت', country: 'الجزائر', lat: 35.371, lng: 1.317, tz: 1 },
+            { key: 'dz15', city: 'تيزي وزو', country: 'الجزائر', lat: 36.711, lng: 4.05, tz: 1 },
+            { key: 'dz16', city: 'الجلفة', country: 'الجزائر', lat: 34.67, lng: 3.263, tz: 1 },
+            { key: 'dz17', city: 'جيجل', country: 'الجزائر', lat: 36.821, lng: 5.766, tz: 1 },
+            { key: 'dz18', city: 'سعيدة', country: 'الجزائر', lat: 34.828, lng: 0.157, tz: 1 },
+            { key: 'dz19', city: 'سكيكدة', country: 'الجزائر', lat: 36.876, lng: 6.91, tz: 1 },
+            { key: 'dz20', city: 'سيدي بلعباس', country: 'الجزائر', lat: 35.19, lng: -0.634, tz: 1 },
+            { key: 'dz21', city: 'قالمة', country: 'الجزائر', lat: 36.463, lng: 7.433, tz: 1 },
+            { key: 'dz22', city: 'المدية', country: 'الجزائر', lat: 36.264, lng: 2.754, tz: 1 },
+            { key: 'dz23', city: 'مستغنم', country: 'الجزائر', lat: 35.934, lng: 0.091, tz: 1 },
+            { key: 'dz24', city: 'المسيلة', country: 'الجزائر', lat: 35.705, lng: 4.542, tz: 1 },
+            { key: 'dz25', city: 'معسكر', country: 'الجزائر', lat: 35.397, lng: 0.14, tz: 1 },
+            { key: 'dz26', city: 'ورقلة', country: 'الجزائر', lat: 31.949, lng: 5.325, tz: 1 },
+            { key: 'dz27', city: 'البيض', country: 'الجزائر', lat: 33.683, lng: 1.019, tz: 1 },
+            { key: 'dz28', city: 'إليزي', country: 'الجزائر', lat: 26.5, lng: 8.469, tz: 1 },
+            { key: 'dz29', city: 'برج بوعريريج', country: 'الجزائر', lat: 36.068, lng: 4.763, tz: 1 },
+            { key: 'dz30', city: 'بومرداس', country: 'الجزائر', lat: 36.758, lng: 3.472, tz: 1 },
+            { key: 'dz31', city: 'الطارف', country: 'الجزائر', lat: 36.771, lng: 8.313, tz: 1 },
+            { key: 'dz32', city: 'تندواف', country: 'الجزائر', lat: 27.671, lng: -8.136, tz: 1 },
+            { key: 'dz33', city: 'تيسمسيلت', country: 'الجزائر', lat: 35.606, lng: 1.811, tz: 1 },
+            { key: 'dz34', city: 'الوادي', country: 'الجزائر', lat: 33.356, lng: -6.863, tz: 1 },
+            { key: 'dz35', city: 'خنشلة', country: 'الجزائر', lat: 35.435, lng: 7.143, tz: 1 },
+            { key: 'dz36', city: 'سوق أهراس', country: 'الجزائر', lat: 36.291, lng: 7.951, tz: 1 },
+            { key: 'dz37', city: 'تيبازة', country: 'الجزائر', lat: 36.589, lng: 2.448, tz: 1 },
+            { key: 'dz38', city: 'مليلة', country: 'الجزائر', lat: 35.45, lng: 6.264, tz: 1 },
+            { key: 'dz39', city: 'عين الدفلة', country: 'الجزائر', lat: 36.264, lng: 1.968, tz: 1 },
+            { key: 'dz40', city: 'النعامة', country: 'الجزائر', lat: 33.267, lng: -0.314, tz: 1 },
+            { key: 'dz41', city: 'عين تموشنت', country: 'الجزائر', lat: 35.298, lng: -1.143, tz: 1 },
+            { key: 'dz42', city: 'غرداية', country: 'الجزائر', lat: 32.489, lng: 3.667, tz: 1 },
+            { key: 'dz43', city: 'غليزان', country: 'الجزائر', lat: 35.744, lng: 0.553, tz: 1 },
+            { key: 'dz44', city: 'تيميمون', country: 'الجزائر', lat: 29.263, lng: 0.241, tz: 1 },
+            { key: 'dz45', city: 'برج باجي مختر', country: 'الجزائر', lat: 21.327, lng: 0.946, tz: 1 },
+            { key: 'dz46', city: 'أولاد جلال', country: 'الجزائر', lat: 34.418, lng: 5.069, tz: 1 },
+            { key: 'dz47', city: 'بني عباس', country: 'الجزائر', lat: 30.134, lng: -2.174, tz: 1 },
+            { key: 'dz48', city: 'عين صالح', country: 'الجزائر', lat: 27.194, lng: 2.484, tz: 1 },
+            { key: 'dz49', city: 'عين قزام', country: 'الجزائر', lat: 19.57, lng: 5.77, tz: 1 },
+            { key: 'dz50', city: 'تقرت', country: 'الجزائر', lat: 33.105, lng: 6.058, tz: 1 },
+            { key: 'dz51', city: 'جانت', country: 'الجزائر', lat: 24.551, lng: 9.48, tz: 1 },
+            { key: 'dz52', city: 'المجير', country: 'الجزائر', lat: 33.946, lng: 5.92, tz: 1 },
+            { key: 'dz53', city: 'المنيعة', country: 'الجزائر', lat: 30.583, lng: 2.883, tz: 1 },
+        ];
+
+        // ===== التنبيه العلوي =====
+        let toastTimer = null;
+        const toastQueue = [];
+        let toastBusy = false;
+        function showToast(msg) {
+            toastQueue.push(msg);
+            if (!toastBusy) nextToast();
+        }
+        function nextToast() {
+            if (!toastQueue.length) { toastBusy = false; return; }
+            toastBusy = true;
+            const t = $('toast');
+            $('toastMessage').textContent = toastQueue.shift();
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                t.classList.remove('show');
+                setTimeout(nextToast, 350);
+            }, 3000);
+        }
+
+        // ===== الموقع =====
+        function loadPlace() {
+            let p = null;
+            try { p = JSON.parse(localStorage.getItem(STORE_KEY) || 'null') || null; } catch (e) { p = null; }
+            if (p && typeof p.lat === 'number' && typeof p.lng === 'number') {
+                const c = cities.find(x => x.key === p.key);
+                return {
+                    key: p.key || (c ? c.key : cities[0].key),
+                    lat: p.lat,
+                    lng: p.lng,
+                    tz: (typeof p.tz === 'number') ? p.tz : (c ? c.tz : -new Date().getTimezoneOffset() / 60),
+                    name: p.name || (c ? c.city + '، ' + c.country : cities[0].city + '، ' + cities[0].country)
+                };
+            }
+            const c = cities[0];
+            return { key: c.key, lat: c.lat, lng: c.lng, tz: c.tz, name: c.city + '، ' + c.country };
+        }
+
+        let place = loadPlace();
+
+        function savePlace() {
+            try { localStorage.setItem(STORE_KEY, JSON.stringify(place)); } catch (e) {}
+        }
+
+        function updatePlaceUI() {
+            $('placeName').textContent = place.name;
+            document.querySelectorAll('.city-item').forEach(el => {
+                el.classList.toggle('on', el.getAttribute('data-city') === place.key);
+            });
+        }
+
+        function haversineKm(lat1, lng1, lat2, lng2) {
+            const R = 6371, r = Math.PI / 180;
+            const dLat = (lat2 - lat1) * r, dLng = (lng2 - lng1) * r;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            return 2 * R * Math.asin(Math.sqrt(a));
+        }
+
+        function reverseGeocodeName(lat, lng) {
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), 6000);
+            return fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng + '&zoom=10&accept-language=ar&addressdetails=1', { signal: ctrl.signal })
+                .then(res => (res.ok ? res.json() : null))
+                .then(data => {
+                    clearTimeout(timer);
+                    const a = data && data.address;
+                    if (!a) return null;
+                    const city = a.town || a.city || a.village || a.county || a.municipality || a.suburb || a.hamlet;
+                    const st = a.state;
+                    if (city && st && city !== st && st.indexOf(city) === -1 && city.indexOf(st) === -1) {
+                        return city + '، ' + st;
+                    }
+                    return city || st || null;
+                })
+                .catch(() => { clearTimeout(timer); return null; });
+        }
+
+        function detectLocation() {
+            if (!navigator.geolocation) {
+                showToast('المتصفح لا يدعم تحديد الموقع');
+                return;
+            }
+            showToast('جاري تحديد موقعك...');
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    let closest = cities[0];
+                    let minDist = Infinity;
+                    for (const c of cities) {
+                        const d = haversineKm(lat, lng, c.lat, c.lng);
+                        if (d < minDist) { minDist = d; closest = c; }
+                    }
+                    const fallback = closest.city + '، ' + closest.country;
+                    place = { key: closest.key, lat: lat, lng: lng, tz: closest.tz, name: fallback };
+                    savePlace();
+                    updatePlaceUI();
+                    showToast('تم تحديد الموقع: ' + fallback);
+                    reverseGeocodeName(lat, lng).then(name => {
+                        if (name) {
+                            place = { key: closest.key, lat: lat, lng: lng, tz: closest.tz, name: name };
+                            savePlace();
+                            updatePlaceUI();
+                        }
+                    });
+                },
+                () => { showToast('تعذر تحديد الموقع، جرّب لاحقًا'); },
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+            );
+        }
+
+        // ===== قائمة المدن =====
+        function renderCities(filter) {
+            const el = $('cityList');
+            const q = (filter || '').trim();
+            if (!q) {
+                el.innerHTML = '<div class="empty-msg">اكتب اسم مدينة أو دولة للبحث</div>';
+                return;
+            }
+            const list = cities.filter(c => c.city.indexOf(q) !== -1 || c.country.indexOf(q) !== -1);
+            if (!list.length) {
+                el.innerHTML = '<div class="empty-msg">لا توجد نتائج مطابقة</div>';
+                return;
+            }
+            el.innerHTML = list.map(c => `
+                <button class="city-item ${c.key === place.key ? 'on' : ''}" type="button" data-city="${c.key}">
+                    <span class="city-info">
+                        <span class="city-name">${c.city}</span>
+                        <span class="city-country">${c.country}</span>
+                    </span>
+                    <i class="fas fa-check"></i>
+                </button>
+            `).join('');
+        }
+
+        // ===== التذكيرات =====
+        function loadRem() {
+            let s = {};
+            try { s = JSON.parse(localStorage.getItem(K_REM) || '{}') || {}; } catch (e) { s = {}; }
+            return s;
+        }
+
+        function updateRemUI() {
+            const s = loadRem();
+            const sw = $('remSwitch');
+            sw.classList.toggle('on', !!s.enabled);
+            sw.setAttribute('aria-checked', String(!!s.enabled));
+        }
+
+        function refreshNotifUI() {
+            if (!('Notification' in window)) {
+                $('notifState').textContent = 'غير مدعومة في هذا المتصفح';
+                $('notifBtn').hidden = true;
+                return;
+            }
+            const p = Notification.permission;
+            if (p === 'granted') {
+                $('notifState').textContent = 'مفعّلة';
+                $('notifBtn').hidden = true;
+            } else if (p === 'denied') {
+                $('notifState').textContent = 'مرفوضة — غيّرها من إعدادات المتصفح';
+                $('notifBtn').hidden = true;
+            } else {
+                $('notifState').textContent = 'غير مفعّلة';
+                $('notifBtn').hidden = false;
+            }
+        }
+
+        function askNotifications() {
+            try {
+                Notification.requestPermission().then(res => {
+                    refreshNotifUI();
+                    if (res === 'granted') showToast('تم تفعيل الإشعارات');
+                    else if (res === 'denied') showToast('تم رفض الإشعارات');
+                });
+            } catch (e) {
+                showToast('تعذر طلب الإشعارات');
+            }
+        }
+
+        // ===== تأكيد حذف =====
+        function confirmAction(title, text, confirmText, onConfirm) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: title,
+                    text: text,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: confirmText,
+                    cancelButtonText: 'إلغاء',
+                    confirmButtonColor: '#0d3b2e',
+                    cancelButtonColor: '#9aa0a6',
+                    reverseButtons: true
+                }).then(res => { if (res.isConfirmed) onConfirm(); });
+            } else {
+                if (window.confirm(title + '\n' + text)) onConfirm();
+            }
+        }
+
+        // ===== إدارة البيانات =====
+        function clearCache() {
+            try { localStorage.removeItem(K_CACHE); localStorage.removeItem(K_LAST); } catch (e) {}
+            showToast('تم مسح ذاكرة المواقيت المؤقتة');
+        }
+
+        // ===== المشاركة و QR =====
+        const SHARE_URL = 'https://salat-app.example.com';
+
+        function currentShareUrl() {
+            const u = window.location.href.split('#')[0];
+            return u;
+        }
+
+        function initShare() {
+            const url = currentShareUrl();
+            $('shareUrlText').textContent = url;
+
+            const enc = encodeURIComponent(url);
+            const text = encodeURIComponent('صلاتي — مواقيت الصلاة الإسلامية');
+
+            $('shareWa').href = 'https://wa.me/?text=' + text + '%20' + enc;
+            $('shareTg').href = 'https://t.me/share/url?url=' + enc + '&text=' + text;
+            $('shareFb').href = 'https://www.facebook.com/sharer/sharer.php?u=' + enc;
+            $('shareMail').href = 'mailto:?subject=' + text + '&body=' + url;
+
+            $('copyLinkBtn').addEventListener('click', () => {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(url).then(() => showToast('تم نسخ الرابط')).catch(() => fallbackCopy(url));
+                } else {
+                    fallbackCopy(url);
+                }
+            });
+
+            $('shareBtn').addEventListener('click', () => {
+                if (navigator.share) {
+                    navigator.share({ title: 'صلاتي', text: 'مواقيت الصلاة الإسلامية', url: url }).catch(() => {});
+                } else {
+                    fallbackCopy(url);
+                    showToast('تم نسخ الرابط — الصقه في أي تطبيق');
+                }
+            });
+
+            $('qrBtn').addEventListener('click', () => {
+                if (typeof Swal === 'undefined' || typeof QRCode === 'undefined') {
+                    showToast('تعذر توليد QR — تحقق من الاتصال');
+                    return;
+                }
+                Swal.fire({
+                    title: 'رمز QR للتطبيق',
+                    html: '<div class="qr-wrap">' +
+                          '<div class="qr-box" id="qrHolder"></div>' +
+                          '<div class="qr-url">' + url + '</div>' +
+                          '</div>',
+                    showCancelButton: true,
+                    confirmButtonText: 'تحميل الصورة',
+                    cancelButtonText: 'إغلاق',
+                    confirmButtonColor: '#0d3b2e',
+                    cancelButtonColor: '#9aa0a6',
+                    reverseButtons: true,
+                    didOpen: () => {
+                        const holder = document.getElementById('qrHolder');
+                        new QRCode(holder, {
+                            text: url,
+                            width: 200,
+                            height: 200,
+                            colorDark: '#0d3b2e',
+                            colorLight: '#ffffff',
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    }
+                }).then(res => {
+                    if (!res.isConfirmed) return;
+                    const holder = document.getElementById('qrHolder');
+                    if (!holder) return;
+                    const canvas = holder.querySelector('canvas');
+                    const img = holder.querySelector('img');
+                    let dataUrl = null;
+                    if (canvas) dataUrl = canvas.toDataURL('image/png');
+                    else if (img) dataUrl = img.src;
+                    if (dataUrl) {
+                        const a = document.createElement('a');
+                        a.href = dataUrl;
+                        a.download = 'salati-qr.png';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        showToast('تم تحميل رمز QR');
+                    }
+                });
+            });
+        }
+
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); showToast('تم نسخ الرابط'); } catch (e) {}
+            document.body.removeChild(ta);
+        }
+
+        function resetLocation() {
+            try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+            place = loadPlace();
+            savePlace();
+            updatePlaceUI();
+            showToast('تمت إعادة تعيين الموقع');
+        }
+
+        function idbOpen() {
+            return new Promise((res, rej) => {
+                try {
+                    const r = indexedDB.open('salat_reminder_sounds', 1);
+                    r.onupgradeneeded = () => {
+                        if (!r.result.objectStoreNames.contains('sounds')) r.result.createObjectStore('sounds');
+                    };
+                    r.onsuccess = () => res(r.result);
+                    r.onerror = () => rej(r.error);
+                } catch (e) { rej(e); }
+            });
+        }
+
+        function wipeAll() {
+            const keys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k && k.indexOf('salat_') === 0) keys.push(k);
+            }
+            keys.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+            try {
+                const req = indexedDB.deleteDatabase('salat_reminder_sounds');
+                req.onsuccess = () => {};
+                req.onerror = () => {};
+            } catch (e) {}
+            place = loadPlace();
+            savePlace();
+            updatePlaceUI();
+            updateRemUI();
+            refreshNotifUI();
+            showToast('تم حذف كل البيانات بنجاح');
+        }
+
+        // ===== قائمة الهيدر =====
+        function initNav() {
+            const menuBtn = $('menuBtn');
+            const siteNav = $('siteNav');
+            const topBar = document.querySelector('.top-bar');
+
+            function setNavIcon(open) {
+                const icon = menuBtn.querySelector('i');
+                if (icon) icon.className = open ? 'fas fa-xmark' : 'fas fa-bars';
+            }
+
+            function closeNav() {
+                siteNav.classList.remove('open');
+                menuBtn.setAttribute('aria-expanded', 'false');
+                setNavIcon(false);
+            }
+
+            menuBtn.addEventListener('click', () => {
+                const open = siteNav.classList.toggle('open');
+                menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                setNavIcon(open);
+            });
+
+            siteNav.addEventListener('click', (e) => {
+                if (e.target.closest('a')) closeNav();
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.site-nav') && !e.target.closest('#menuBtn')) closeNav();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeNav();
+            });
+
+            function syncHeaderBg() {
+                topBar.classList.toggle('is-scrolled', window.scrollY > 8);
+            }
+            window.addEventListener('scroll', syncHeaderBg, { passive: true });
+            syncHeaderBg();
+        }
+
+        // ===== التشغيل =====
+        document.addEventListener('DOMContentLoaded', () => {
+            updatePlaceUI();
+            renderCities('');
+            updateRemUI();
+            refreshNotifUI();
+            initNav();
+
+            // الموقع
+            $('gpsBtn').addEventListener('click', detectLocation);
+
+            $('cityToggle').addEventListener('click', () => {
+                const box = $('cityBox');
+                box.hidden = !box.hidden;
+                if (!box.hidden) {
+                    $('citySearch').value = '';
+                    renderCities('');
+                    $('citySearch').focus();
+                }
+            });
+
+            $('citySearch').addEventListener('input', (e) => renderCities(e.target.value));
+
+            $('cityList').addEventListener('click', (e) => {
+                const item = e.target.closest('[data-city]');
+                if (!item) return;
+                const key = item.getAttribute('data-city');
+                const c = cities.find(x => x.key === key);
+                if (!c) return;
+                place = { key: c.key, lat: c.lat, lng: c.lng, tz: c.tz, name: c.city + '، ' + c.country };
+                savePlace();
+                updatePlaceUI();
+                $('cityBox').hidden = true;
+                $('citySearch').value = '';
+                renderCities('');
+                showToast('تم اختيار: ' + place.name);
+            });
+
+            // التذكيرات
+            $('remSwitch').addEventListener('click', () => {
+                const s = loadRem();
+                s.enabled = !s.enabled;
+                try { localStorage.setItem(K_REM, JSON.stringify(s)); } catch (e) {}
+                updateRemUI();
+                showToast(s.enabled ? 'تم تفعيل التذكيرات' : 'تم إيقاف التذكيرات');
+            });
+
+            $('notifBtn').addEventListener('click', askNotifications);
+
+            $('testBtn').addEventListener('click', () => {
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    try { new Notification('تذكير تجريبي', { body: 'هكذا سيصلك التنبيه قبل الصلاة', tag: 'salat-test' }); } catch (e) {}
+                }
+                showToast('تم تشغيل تجربة التنبيه');
+            });
+
+            // المشاركة
+            initShare();
+
+            // البيانات
+            $('clearCacheBtn').addEventListener('click', clearCache);
+
+            $('resetLocBtn').addEventListener('click', () => {
+                confirmAction('إعادة تعيين الموقع؟', 'سيعود الموقع إلى المدينة الافتراضية (الجزائر).', 'نعم، أعد التعيين', resetLocation);
+            });
+
+            $('wipeBtn').addEventListener('click', () => {
+                confirmAction('حذف كل البيانات؟', 'سيتم حذف الموقع والإعدادات والأصوات المرفوعة نهائيًا. لا يمكن التراجع.', 'نعم، احذف الكل', wipeAll);
+            });
+        });
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('sw.js').catch(function () {});
+            });
+        }
+    </script>
+</body>
+</html>

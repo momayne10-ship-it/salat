@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <mask id="cut" maskUnits="userSpaceOnUse" x="0" y="0" width="1" height="1">
+      <rect x="0" y="0" width="1" height="1" fill="#ffffff"/>
+      <circle cx="0.55" cy="0.4" r="0.265" fill="#000000"/>
+    </mask>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" fill="#0d3b2e"/>
+  <g transform="translate(97.28,97.28) scale(317.44)">
+    <circle cx="0.44" cy="0.47" r="0.3" fill="#c9a227" mask="url(#cut)"/>
+    <polygon points="0.76,0.125 0.7841,0.1868 0.8504,0.1906 0.799,0.2327 0.8158,0.2969 0.76,0.261 0.7042,0.2969 0.721,0.2327 0.6696,0.1906 0.7359,0.1868" fill="#c9a227"/>
+  </g>
+</svg>

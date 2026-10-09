@@ -1,0 +1,1967 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><script>(function(){var w=Math.max(window.innerWidth||0,document.documentElement.clientWidth||0);if(w>=768){document.documentElement.innerHTML='<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>صلاتي</title><style>body{margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0d3b2e;color:#faf7f0;font-family:sans-serif;text-align:center;padding:20px}.\boxed{max-width:320px}.icon{font-size:64px;margin-bottom:16px}.msg{font-size:20px;line-height:1.8}.sub{font-size:14px;color:#c9a227;margin-top:12px}</style></head><body><div class="box"><div class="icon">&#128241;</div><div class="msg">التطبيق يعمل على الهاتف فقط</div><div class="sub">الرجاء فتح الرابط من هاتفك</div></div></body>'}})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقويم الصلاة</title>
+
+    <!-- خطوط بأسلوب المصحف الكريم: Amiri Quran + Amiri -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <!-- أيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #0d3b2e;
+            --primary-light: #1a5c48;
+            --primary-dark: #072418;
+            --gold: #c9a227;
+            --gold-light: #e6c458;
+            --cream: #faf7f0;
+            --cream-dark: #f0ead8;
+            --text-dark: #1a1a1a;
+            --text-light: #7a7a7a;
+            --white: #ffffff;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-md: 0 8px 24px rgba(0,0,0,0.1);
+            --shadow-lg: 0 16px 48px rgba(0,0,0,0.15);
+            --radius: 16px;
+            --radius-lg: 24px;
+            --radius-pill: 999px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 86px;
+        }
+
+        body {
+            font-family: 'Amiri Quran', 'Amiri', 'Tajawal', serif;
+            background: var(--cream);
+            color: var(--text-dark);
+            min-height: 100vh;
+            line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* خلفية زخرفية */
+        .bg-pattern {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            opacity: 0.04;
+            background-image:
+                radial-gradient(circle at 25% 25%, var(--primary) 1px, transparent 1px),
+                radial-gradient(circle at 75% 75%, var(--gold) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background:
+                radial-gradient(ellipse at 0% 0%, rgba(13, 59, 46, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 100% 100%, rgba(201, 162, 39, 0.08) 0%, transparent 50%);
+        }
+
+        /* ===== شريط الهيدر ===== */
+        .top-bar {
+            --header-h: 74px;
+            background: transparent;
+            padding: 16px 20px;
+            box-shadow: none;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid transparent;
+            transition: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .top-bar.is-scrolled {
+            background: rgba(255, 255, 255, 0.82);
+            -webkit-backdrop-filter: blur(14px) saturate(1.5);
+            backdrop-filter: blur(14px) saturate(1.5);
+            box-shadow: var(--shadow-sm);
+            border-bottom-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .top-bar-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* ===== الشعار ===== */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--gold-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            box-shadow: 0 4px 14px rgba(13, 59, 46, 0.28);
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .brand-text strong {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .brand-text small {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        /* ===== زر القائمة ===== */
+        .menu-btn {
+            width: 42px;
+            height: 42px;
+            border: 1.5px solid rgba(13, 59, 46, 0.15);
+            border-radius: 50%;
+            background: transparent;
+            color: var(--primary);
+            font-size: 1rem;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .menu-btn:hover,
+        .menu-btn:focus-visible {
+            background: rgba(13, 59, 46, 0.06);
+            border-color: rgba(13, 59, 46, 0.3);
+            color: var(--primary-dark);
+            outline: none;
+        }
+
+        /* ===== التنقل ===== */
+        .site-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .site-nav-list {
+            display: flex;
+            gap: 1.7rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .site-nav-link {
+            display: inline-block;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: rgba(13, 59, 46, 0.7);
+            text-decoration: none;
+            padding: 0.4rem 0;
+            transition: color 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .site-nav-link:hover,
+        .site-nav-link.is-active {
+            color: var(--primary-dark);
+        }
+
+        .site-nav-action {
+            display: none;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        /* ===== زر تحديد الموقع ===== */
+        .gps-btn {
+            padding: 14px 20px;
+            border: 2px solid var(--primary);
+            border-radius: 50px;
+            background: var(--primary);
+            color: var(--white);
+            font-family: 'Amiri Quran', 'Amiri', 'Tajawal', serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .gps-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(13, 59, 46, 0.3);
+        }
+
+        /* ===== المحتوى ===== */
+        .main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 26px 20px 50px;
+        }
+
+        .location-header {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .location-header h1 {
+            font-family: 'Amiri Quran', 'Amiri', 'Tajawal', serif;
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: var(--primary-dark);
+            line-height: 1.2;
+            margin-bottom: 6px;
+        }
+
+        .location-header h1 i {
+            color: var(--gold);
+            font-size: 1.8rem;
+            margin-left: 8px;
+        }
+
+        .location-header .country {
+            font-size: 1rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        /* ===== بطاقة التقويم ===== */
+        .cal-card {
+            background: var(--white);
+            border: 1px solid rgba(13, 59, 46, 0.07);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 22px;
+        }
+
+        .cal-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .cal-nav {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cal-nav-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(13, 59, 46, 0.15);
+            background: transparent;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.85rem;
+        }
+
+        .cal-nav-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--white);
+        }
+
+        .cal-title {
+            text-align: center;
+            min-width: 170px;
+        }
+
+        .cal-title strong {
+            display: block;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            line-height: 1.3;
+        }
+
+        .cal-title small {
+            font-size: 0.75rem;
+            color: var(--gold);
+            font-weight: 700;
+        }
+
+        .cal-tools {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .today-btn {
+            padding: 9px 16px;
+            border: 2px solid rgba(201, 162, 39, 0.45);
+            border-radius: 50px;
+            background: rgba(201, 162, 39, 0.12);
+            color: var(--primary-dark);
+            font-family: 'Amiri Quran', 'Amiri', 'Tajawal', serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .today-btn:hover {
+            background: rgba(201, 162, 39, 0.25);
+        }
+
+        .city-select {
+            padding: 9px 14px;
+            border: 2px solid rgba(13, 59, 46, 0.12);
+            border-radius: 50px;
+            background: var(--cream);
+            font-family: 'Amiri Quran', 'Amiri', 'Tajawal', serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            outline: none;
+            cursor: pointer;
+            transition: var(--transition);
+            max-width: 190px;
+        }
+
+        .city-select:focus {
+            border-color: var(--primary);
+        }
+
+        .cal-legend {
+            font-size: 0.74rem;
+            color: var(--text-light);
+            text-align: center;
+            margin-bottom: 12px;
+            line-height: 1.7;
+        }
+
+        .cal-legend b {
+            color: var(--primary);
+        }
+
+        /* رؤوس الأيام */
+        .cal-head,
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .cal-head {
+            margin-bottom: 6px;
+        }
+
+        .cal-head div {
+            text-align: center;
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            background: rgba(13, 59, 46, 0.06);
+            border-radius: var(--radius-pill);
+            padding: 6px 0;
+        }
+
+        .cal-head div.holiday {
+            background: rgba(201, 162, 39, 0.16);
+            color: var(--primary-dark);
+        }
+
+        /* خانة اليوم */
+        .cal-cell {
+            background: var(--white);
+            border: 1px solid rgba(13, 59, 46, 0.07);
+            border-radius: 12px;
+            padding: 7px 5px;
+            min-height: 96px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .cal-cell:hover {
+            border-color: rgba(201, 162, 39, 0.55);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .cal-cell.dim {
+            opacity: 0.42;
+        }
+
+        .cal-cell.today {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 2px rgba(201, 162, 39, 0.25);
+        }
+
+        .cal-cell.selected {
+            background: linear-gradient(160deg, var(--primary), var(--primary-dark));
+            border-color: transparent;
+            box-shadow: 0 8px 22px rgba(13, 59, 46, 0.3);
+        }
+
+        .cc-top {
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .cc-day {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            line-height: 1.1;
+        }
+
+        .cc-hijri {
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .cal-cell.selected .cc-day {
+            color: var(--white);
+        }
+
+        .cal-cell.selected .cc-hijri {
+            color: var(--gold-light);
+        }
+
+        .cc-times {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            font-size: 0.66rem;
+            color: var(--text-light);
+            direction: ltr;
+            font-variant-numeric: tabular-nums;
+            line-height: 1.45;
+        }
+
+        .cc-times span:nth-child(1),
+        .cc-times span:nth-child(6) {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .cc-times span:nth-child(2) {
+            color: var(--gold);
+        }
+
+        .cal-cell.selected .cc-times span {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .cal-cell.selected .cc-times span:nth-child(2) {
+            color: var(--gold-light);
+        }
+
+        /* ===== تفاصيل اليوم المختار ===== */
+        .day-detail {
+            background: var(--white);
+            border: 1px solid rgba(13, 59, 46, 0.07);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .detail-title {
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .detail-title h2 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .detail-title h2 i {
+            color: var(--gold);
+        }
+
+        .detail-title .hijri {
+            font-size: 0.9rem;
+            color: var(--gold);
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .prayers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .prayer-row {
+            background: var(--white);
+            border-radius: var(--radius-pill);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            min-height: 58px;
+        }
+
+        .prayer-row::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--gold), var(--gold-light));
+            transform: scaleY(0);
+            transform-origin: top;
+            transition: transform 0.4s ease;
+        }
+
+        .prayer-row:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .prayer-row:hover::before {
+            transform: scaleY(1);
+        }
+
+        .prayer-row.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
+            box-shadow: 0 8px 30px rgba(13, 59, 46, 0.3);
+            transform: none;
+        }
+
+        .prayer-row.active::before {
+            transform: scaleY(1);
+            background: var(--gold-light);
+        }
+
+        .prayer-row.passed {
+            opacity: 0.5;
+        }
+
+        .prayer-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .prayer-row-icon {
+            width: 38px;
+            height: 38px;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, rgba(13, 59, 46, 0.08), rgba(201, 162, 39, 0.10));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            color: var(--primary);
+            transition: var(--transition);
+        }
+
+        .prayer-row.active .prayer-row-icon {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--gold-light);
+        }
+
+        .prayer-row-name {
+            font-size: 1.12rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            line-height: 1.4;
+        }
+
+        .prayer-row.active .prayer-row-name {
+            color: var(--white);
+        }
+
+        .prayer-row-time {
+            font-size: 1.22rem;
+            font-weight: 800;
+            color: var(--primary);
+            direction: ltr;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .prayer-row.active .prayer-row-time {
+            color: var(--gold-light);
+        }
+
+        /* ===== عرض الهاتف: بطاقة اليوم ===== */
+        .m-day-card {
+            display: none;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            padding: 0;
+            margin-bottom: 22px;
+        }
+
+        .m-day-nav {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .m-arrows {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--cream);
+            border: 1px solid rgba(13, 59, 46, 0.08);
+            border-radius: var(--radius-pill);
+            padding: 6px;
+            min-width: 0;
+        }
+
+        .m-nav-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(13, 59, 46, 0.15);
+            background: var(--white);
+            color: var(--primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .m-nav-btn:hover,
+        .m-nav-btn:active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--white);
+        }
+
+        .m-day-date {
+            flex: 1;
+            text-align: center;
+            line-height: 1.3;
+            min-width: 0;
+        }
+
+        .m-day-date strong {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .m-day-date small {
+            display: block;
+            font-size: 0.72rem;
+            color: var(--gold);
+            font-weight: 700;
+        }
+
+        .m-cal-btn {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: none;
+            flex-shrink: 0;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--gold-light);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(13, 59, 46, 0.28);
+            transition: var(--transition);
+        }
+
+        .m-cal-btn:hover,
+        .m-cal-btn:active {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(13, 59, 46, 0.35);
+        }
+
+        /* ===== منتقي الشهر المنبثق ===== */
+        .cal-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .cal-modal.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .cal-modal-bd {
+            position: absolute;
+            inset: 0;
+            background: rgba(7, 36, 24, 0.55);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+        }
+
+        .cal-modal-box {
+            position: relative;
+            width: min(94vw, 380px);
+            max-height: calc(100vh - 32px);
+            overflow-y: auto;
+            background: var(--white);
+            border: 1px solid rgba(201, 162, 39, 0.25);
+            border-radius: 20px;
+            padding: 16px;
+            box-shadow: 0 30px 70px rgba(7, 36, 24, 0.45);
+            transform: translateY(24px) scale(0.94);
+            transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .cal-modal.open .cal-modal-box {
+            transform: translateY(0) scale(1);
+        }
+
+        .cm-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .cm-week {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .cm-week span {
+            text-align: center;
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            background: rgba(13, 59, 46, 0.06);
+            border-radius: var(--radius-pill);
+            padding: 4px 0;
+        }
+
+        .cm-week span.holiday {
+            background: rgba(201, 162, 39, 0.18);
+        }
+
+        .cm-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .cm-day {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            border: 1px solid rgba(13, 59, 46, 0.07);
+            background: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Amiri Quran', 'Amiri', 'Tajawal', serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 0;
+        }
+
+        .cm-day:hover,
+        .cm-day:focus-visible {
+            border-color: rgba(201, 162, 39, 0.6);
+            background: rgba(201, 162, 39, 0.1);
+            outline: none;
+        }
+
+        .cm-day.dim {
+            opacity: 0.35;
+        }
+
+        .cm-day.today {
+            border: 1.5px solid var(--gold);
+            box-shadow: 0 0 0 2px rgba(201, 162, 39, 0.2);
+        }
+
+        .cm-day.selected {
+            background: linear-gradient(160deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            border-color: transparent;
+            box-shadow: 0 6px 16px rgba(13, 59, 46, 0.3);
+        }
+
+        /* ===== الفوتر ===== */
+        .footer {
+            text-align: center;
+            padding: 24px 20px 32px;
+        }
+
+        .footer-verse {
+            font-size: 0.95rem;
+            color: var(--primary);
+            opacity: 0.75;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .footer-text {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            letter-spacing: 1px;
+        }
+
+        /* ===== رسالة تنبيه ===== */
+        .toast {
+            position: fixed;
+            top: 86px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-150px);
+            opacity: 0;
+            visibility: hidden;
+            background: var(--primary-dark);
+            color: var(--white);
+            padding: 11px 22px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.4s ease, opacity 0.4s ease, visibility 0.4s ease;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            max-width: 92vw;
+            white-space: nowrap;
+        }
+
+        .toast span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .toast i {
+            color: var(--gold-light);
+        }
+
+        /* ===== التجاوب ===== */
+        @media (max-width: 860px) {
+            .menu-btn {
+                display: flex;
+            }
+
+            .header-gps {
+                display: none;
+            }
+
+            .site-nav {
+                position: fixed;
+                top: calc(var(--header-h) + 4px);
+                left: 1rem;
+                width: 85%;
+                max-width: 300px;
+                display: block;
+                background: linear-gradient(165deg, rgba(13, 59, 46, 0.97), rgba(8, 40, 31, 0.98));
+                -webkit-backdrop-filter: blur(30px);
+                backdrop-filter: blur(30px);
+                border-radius: 1.5rem;
+                border: 1px solid rgba(201, 162, 39, 0.22);
+                padding: 1.2rem 0;
+                box-shadow: 0 25px 60px rgba(13, 59, 46, 0.35);
+                transform: scale(0.9);
+                transform-origin: top left;
+                opacity: 0;
+                pointer-events: none;
+                transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                z-index: 999;
+                max-height: calc(100vh - var(--header-h) - 2rem);
+                overflow-y: auto;
+            }
+
+            .site-nav.open {
+                transform: scale(1);
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            .site-nav-list {
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 0 0.5rem;
+            }
+
+            .site-nav-link {
+                display: block;
+                padding: 0.8rem 1.2rem;
+                font-size: 1rem;
+                border-radius: 9999px;
+                background: rgba(255, 255, 255, 0.06);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                color: rgba(255, 255, 255, 0.82);
+                transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            }
+
+            .site-nav-link:hover,
+            .site-nav-link.is-active {
+                background: rgba(201, 162, 39, 0.16);
+                border-color: rgba(201, 162, 39, 0.4);
+                color: var(--white);
+            }
+
+            .site-nav-action {
+                display: block;
+                margin: 0.6rem 0.5rem 0;
+                padding-top: 1rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .nav-gps-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                width: 100%;
+                padding: 0.55rem 0.9rem;
+                background: rgba(201, 162, 39, 0.14);
+                border: 1px solid rgba(201, 162, 39, 0.35);
+                border-radius: 50px;
+                color: var(--gold-light);
+                font-family: 'Amiri Quran', 'Amiri', 'Tajawal', serif;
+                font-size: 0.85rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: background 0.2s ease, color 0.2s ease;
+            }
+
+            .nav-gps-btn:hover,
+            .nav-gps-btn:focus-visible {
+                background: rgba(201, 162, 39, 0.28);
+                color: var(--white);
+                outline: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .top-bar {
+                --header-h: 66px;
+                padding: 12px 14px;
+            }
+
+            .brand-text {
+                display: none;
+            }
+
+            .location-header h1 {
+                font-size: 2rem;
+            }
+
+            .location-header h1 i {
+                font-size: 1.3rem;
+            }
+
+            .cal-card {
+                padding: 12px 8px;
+            }
+
+            .cal-toolbar {
+                justify-content: center;
+            }
+
+            .cal-title {
+                min-width: 130px;
+            }
+
+            .cal-title strong {
+                font-size: 1.05rem;
+            }
+
+            .city-select {
+                max-width: 150px;
+            }
+
+            .cal-head div {
+                font-size: 0.62rem;
+                padding: 5px 0;
+            }
+
+            .cal-head,
+            .cal-grid {
+                gap: 4px;
+            }
+
+            .cal-cell {
+                min-height: 74px;
+                padding: 5px 2px;
+                gap: 2px;
+            }
+
+            .cc-day {
+                font-size: 0.9rem;
+            }
+
+            .cc-hijri {
+                display: none;
+            }
+
+            .cc-times {
+                font-size: 0.56rem;
+                line-height: 1.4;
+            }
+
+            .day-detail {
+                padding: 16px 12px;
+            }
+
+            .prayer-row {
+                padding: 8px 12px;
+                min-height: 52px;
+            }
+        }
+
+        /* ===== تبديل العرض حسب حجم الشاشة ===== */
+        @media (max-width: 700px) {
+            .cal-card,
+            .day-detail {
+                display: none;
+            }
+
+            .m-day-card {
+                display: block;
+            }
+        }
+
+        @media (min-width: 701px) {
+            .cal-modal {
+                display: none;
+            }
+        }
+    </style>
+
+    <!-- PWA -->
+    <meta name="theme-color" content="#0d3b2e">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="صلاتي">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" sizes="32x32" href="favicon.ico">
+</head>
+
+<body>
+    <div class="bg-pattern"></div>
+    <div class="bg-gradient"></div>
+
+    <!-- الهيدر -->
+    <div class="top-bar">
+        <div class="top-bar-inner">
+            <a class="brand" href="index.html">
+                <span class="brand-icon"><i class="fas fa-moon"></i></span>
+                <span class="brand-text">
+                    <strong>صلاتي</strong>
+                    <small>مواقيت الصلاة</small>
+                </span>
+            </a>
+
+            <nav class="site-nav" id="siteNav">
+                <ul class="site-nav-list">
+                    <li><a href="index.html" class="site-nav-link">الرئيسية</a></li>
+                    <li><a href="calendar.html" class="site-nav-link is-active">التقويم</a></li>
+                    <li><a href="adhan.html" class="site-nav-link">الأذان</a></li>
+                    <li><a href="qibla.html" class="site-nav-link">القبلة</a></li>
+                    <li><a href="reminders.html" class="site-nav-link">التذكيرات</a></li>
+                    <li><a href="settings.html" class="site-nav-link">الإعدادات</a></li>
+                </ul>
+
+                <div class="site-nav-action">
+                    <button class="nav-gps-btn" type="button" onclick="detectLocation()">
+                        <i class="fas fa-location-crosshairs"></i>
+                        موقعي الحالي
+                    </button>
+                </div>
+            </nav>
+
+            <div class="header-actions">
+                <button class="gps-btn header-gps" onclick="detectLocation()">
+                    <i class="fas fa-location-crosshairs"></i>
+                    موقعي الحالي
+                </button>
+                <button class="menu-btn" id="menuBtn" type="button" aria-label="تبديل القائمة" aria-expanded="false">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- المحتوى -->
+    <main class="main" id="calendar">
+
+        <div class="location-header">
+            <h1>
+                <i class="fas fa-calendar-days"></i>
+                تقويم الصلاة
+            </h1>
+            <div class="country" id="placeLabel">الموقع: ---</div>
+        </div>
+
+        <!-- التقويم -->
+        <div class="cal-card">
+            <div class="cal-toolbar">
+                <div class="cal-nav">
+                    <button class="cal-nav-btn" id="prevMonth" type="button" aria-label="الشهر السابق">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div class="cal-title">
+                        <strong id="monthTitle">---</strong>
+                        <small id="monthHijri">---</small>
+                    </div>
+                    <button class="cal-nav-btn" id="nextMonth" type="button" aria-label="الشهر التالي">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                </div>
+
+                <div class="cal-tools">
+                    <button class="today-btn" id="todayBtn" type="button">اليوم</button>
+                    <select class="city-select" id="citySelect" aria-label="اختر مدينتك"></select>
+                </div>
+            </div>
+
+            <div class="cal-legend">
+                مواقيت كل يوم <b>بالترتيب من الأعلى إلى الأسفل</b>:
+                الفجر • الشروق • الظهر • العصر • المغرب • العشاء
+            </div>
+
+            <div class="cal-head">
+                <div>الأحد</div>
+                <div>الاثنين</div>
+                <div>الثلاثاء</div>
+                <div>الأربعاء</div>
+                <div>الخميس</div>
+                <div class="holiday">الجمعة</div>
+                <div>السبت</div>
+            </div>
+
+            <div class="cal-grid" id="calGrid">
+                <!-- تُملأ بالجافاسكريبت -->
+            </div>
+        </div>
+
+        <!-- تفاصيل اليوم المختار -->
+        <div class="day-detail">
+            <div class="detail-title">
+                <h2><i class="fas fa-clock"></i> <span id="detailDate">---</span></h2>
+                <div class="hijri" id="detailHijri">---</div>
+            </div>
+            <div class="prayers-list" id="detailList">
+                <!-- تُملأ بالجافاسكريبت -->
+            </div>
+        </div>
+
+        <!-- عرض الهاتف: يوم واحد -->
+        <div class="m-day-card">
+            <div class="m-day-nav">
+                <div class="m-arrows">
+                    <button class="m-nav-btn" id="mPrevDay" type="button" aria-label="اليوم السابق">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div class="m-day-date">
+                        <strong id="mDate">---</strong>
+                        <small id="mHijri">---</small>
+                    </div>
+                    <button class="m-nav-btn" id="mNextDay" type="button" aria-label="اليوم التالي">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                </div>
+                <button class="m-cal-btn" id="mCalBtn" type="button" aria-label="فتح التقويم">
+                    <i class="fas fa-calendar-days"></i>
+                </button>
+            </div>
+
+            <div class="prayers-list" id="mList">
+                <!-- تُملأ بالجافاسكريبت -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- الفوتر -->
+    <footer class="footer">
+        <div class="footer-verse">
+            ﴿ إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا ﴾
+        </div>
+        <div class="footer-text">© 2026 جميع الحقوق محفوظة — طور من طرف GM SOFT</div>
+    </footer>
+
+    <!-- منتقي الشهر (الهاتف) -->
+    <div class="cal-modal" id="calModal" aria-hidden="true">
+        <div class="cal-modal-bd" id="calModalBd"></div>
+        <div class="cal-modal-box" role="dialog" aria-label="اختيار اليوم">
+            <div class="cm-head">
+                <button class="cal-nav-btn" id="cmPrev" type="button" aria-label="الشهر السابق">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <div class="cal-title">
+                    <strong id="cmTitle">---</strong>
+                    <small id="cmHijri">---</small>
+                </div>
+                <button class="cal-nav-btn" id="cmNext" type="button" aria-label="الشهر التالي">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+
+            <div class="cm-week">
+                <span>ح</span>
+                <span>ن</span>
+                <span>ث</span>
+                <span>ر</span>
+                <span>خ</span>
+                <span class="holiday">ج</span>
+                <span>س</span>
+            </div>
+
+            <div class="cm-grid" id="cmGrid">
+                <!-- تُملأ بالجافاسكريبت -->
+            </div>
+        </div>
+    </div>
+
+    <!-- رسالة تنبيه -->
+    <div class="toast" id="toast">
+        <i class="fas fa-info-circle"></i>
+        <span id="toastMessage">---</span>
+    </div>
+
+    <script>
+        // ===== ثوابت =====
+        const STORE_KEY = 'salat_qibla_location';
+
+        // ===== بيانات المدن =====
+        const cities = [
+            { key: 'algiers',     city: 'الجزائر',      country: 'الجزائر',    lat: 36.7538, lng: 3.0588,   tz: 1 },
+            { key: 'oran',        city: 'وهران',        country: 'الجزائر',    lat: 35.6969, lng: -0.6331,  tz: 1 },
+            { key: 'constantine', city: 'قسنطينة',      country: 'الجزائر',    lat: 36.3650, lng: 6.6147,   tz: 1 },
+            { key: 'annaba',      city: 'عنابة',        country: 'الجزائر',    lat: 36.9000, lng: 7.7667,   tz: 1 },
+            { key: 'setif',       city: 'سطيف',         country: 'الجزائر',    lat: 36.1911, lng: 5.4137,   tz: 1 },
+            { key: 'cairo',       city: 'القاهرة',      country: 'مصر',        lat: 30.0444, lng: 31.2357,  tz: 2 },
+            { key: 'alexandria',  city: 'الإسكندرية',   country: 'مصر',        lat: 31.2001, lng: 29.9187,  tz: 2 },
+            { key: 'makkah',      city: 'مكة المكرمة',  country: 'السعودية',   lat: 21.4225, lng: 39.8262,  tz: 3 },
+            { key: 'madinah',     city: 'المدينة المنورة', country: 'السعودية', lat: 24.4672, lng: 39.6111, tz: 3 },
+            { key: 'riyadh',      city: 'الرياض',       country: 'السعودية',   lat: 24.7136, lng: 46.6753,  tz: 3 },
+            { key: 'jeddah',      city: 'جدة',          country: 'السعودية',   lat: 21.4858, lng: 39.1925,  tz: 3 },
+            { key: 'dubai',       city: 'دبي',          country: 'الإمارات',   lat: 25.2048, lng: 55.2708,  tz: 4 },
+            { key: 'abudhabi',    city: 'أبوظبي',       country: 'الإمارات',   lat: 24.4539, lng: 54.3773,  tz: 4 },
+            { key: 'doha',        city: 'الدوحة',       country: 'قطر',        lat: 25.2854, lng: 51.5310,  tz: 3 },
+            { key: 'kuwait',      city: 'الكويت',       country: 'الكويت',     lat: 29.3759, lng: 47.9774,  tz: 3 },
+            { key: 'manama',      city: 'المنامة',      country: 'البحرين',    lat: 26.2285, lng: 50.5860,  tz: 3 },
+            { key: 'muscat',      city: 'مسقط',         country: 'عُمان',      lat: 23.5880, lng: 58.3829,  tz: 4 },
+            { key: 'amman',       city: 'عمّان',        country: 'الأردن',     lat: 31.9454, lng: 35.9284,  tz: 3 },
+            { key: 'beirut',      city: 'بيروت',        country: 'لبنان',      lat: 33.8938, lng: 35.5018,  tz: 3 },
+            { key: 'damascus',    city: 'دمشق',         country: 'سوريا',      lat: 33.5138, lng: 36.2765,  tz: 3 },
+            { key: 'baghdad',     city: 'بغداد',        country: 'العراق',     lat: 33.3152, lng: 44.3661,  tz: 3 },
+            { key: 'khartoum',    city: 'الخرطوم',      country: 'السودان',    lat: 15.5007, lng: 32.5599,  tz: 2 },
+            { key: 'tunis',       city: 'تونس',         country: 'تونس',       lat: 36.8065, lng: 10.1815,  tz: 1 },
+            { key: 'casablanca',  city: 'الدار البيضاء', country: 'المغرب',    lat: 33.5731, lng: -7.5898,  tz: 1 },
+            { key: 'rabat',       city: 'الرباط',       country: 'المغرب',     lat: 34.0209, lng: -6.8416,  tz: 1 },
+            { key: 'nouakchott',  city: 'نواكشوط',      country: 'موريتانيا',  lat: 18.0735, lng: -15.9582, tz: 0 },
+            { key: 'istanbul',    city: 'إسطنبول',      country: 'تركيا',      lat: 41.0082, lng: 28.9784,  tz: 3 },
+            { key: 'london',      city: 'لندن',         country: 'بريطانيا',   lat: 51.5074, lng: -0.1278,  tz: 0 },
+            { key: 'paris',       city: 'باريس',        country: 'فرنسا',      lat: 48.8566, lng: 2.3522,   tz: 1 },
+            { key: 'newyork',     city: 'نيويورك',      country: 'أمريكا',     lat: 40.7128, lng: -74.0060, tz: -5 },
+            { key: 'dz01', city: 'أدرار', country: 'الجزائر', lat: 27.871, lng: -0.293, tz: 1 },
+            { key: 'dz02', city: 'الشلف', country: 'الجزائر', lat: 36.164, lng: 1.332, tz: 1 },
+            { key: 'dz03', city: 'الأغواط', country: 'الجزائر', lat: 33.805, lng: 2.863, tz: 1 },
+            { key: 'dz04', city: 'أم البواقي', country: 'الجزائر', lat: 35.875, lng: 7.113, tz: 1 },
+            { key: 'dz05', city: 'باتنة', country: 'الجزائر', lat: 35.556, lng: 6.174, tz: 1 },
+            { key: 'dz06', city: 'بجاية', country: 'الجزائر', lat: 36.751, lng: 5.078, tz: 1 },
+            { key: 'dz07', city: 'بسكرة', country: 'الجزائر', lat: 34.848, lng: 5.728, tz: 1 },
+            { key: 'dz08', city: 'بشار', country: 'الجزائر', lat: 31.617, lng: -2.216, tz: 1 },
+            { key: 'dz09', city: 'البليدة', country: 'الجزائر', lat: 36.47, lng: 2.828, tz: 1 },
+            { key: 'dz10', city: 'البويرة', country: 'الجزائر', lat: 36.374, lng: 3.905, tz: 1 },
+            { key: 'dz11', city: 'تمنراست', country: 'الجزائر', lat: 22.785, lng: 5.523, tz: 1 },
+            { key: 'dz12', city: 'تبسة', country: 'الجزائر', lat: 35.404, lng: 8.124, tz: 1 },
+            { key: 'dz13', city: 'تلمسان', country: 'الجزائر', lat: 34.883, lng: -1.31, tz: 1 },
+            { key: 'dz14', city: 'تيارت', country: 'الجزائر', lat: 35.371, lng: 1.317, tz: 1 },
+            { key: 'dz15', city: 'تيزي وزو', country: 'الجزائر', lat: 36.711, lng: 4.05, tz: 1 },
+            { key: 'dz16', city: 'الجلفة', country: 'الجزائر', lat: 34.67, lng: 3.263, tz: 1 },
+            { key: 'dz17', city: 'جيجل', country: 'الجزائر', lat: 36.821, lng: 5.766, tz: 1 },
+            { key: 'dz18', city: 'سعيدة', country: 'الجزائر', lat: 34.828, lng: 0.157, tz: 1 },
+            { key: 'dz19', city: 'سكيكدة', country: 'الجزائر', lat: 36.876, lng: 6.91, tz: 1 },
+            { key: 'dz20', city: 'سيدي بلعباس', country: 'الجزائر', lat: 35.19, lng: -0.634, tz: 1 },
+            { key: 'dz21', city: 'قالمة', country: 'الجزائر', lat: 36.463, lng: 7.433, tz: 1 },
+            { key: 'dz22', city: 'المدية', country: 'الجزائر', lat: 36.264, lng: 2.754, tz: 1 },
+            { key: 'dz23', city: 'مستغنم', country: 'الجزائر', lat: 35.934, lng: 0.091, tz: 1 },
+            { key: 'dz24', city: 'المسيلة', country: 'الجزائر', lat: 35.705, lng: 4.542, tz: 1 },
+            { key: 'dz25', city: 'معسكر', country: 'الجزائر', lat: 35.397, lng: 0.14, tz: 1 },
+            { key: 'dz26', city: 'ورقلة', country: 'الجزائر', lat: 31.949, lng: 5.325, tz: 1 },
+            { key: 'dz27', city: 'البيض', country: 'الجزائر', lat: 33.683, lng: 1.019, tz: 1 },
+            { key: 'dz28', city: 'إليزي', country: 'الجزائر', lat: 26.5, lng: 8.469, tz: 1 },
+            { key: 'dz29', city: 'برج بوعريريج', country: 'الجزائر', lat: 36.068, lng: 4.763, tz: 1 },
+            { key: 'dz30', city: 'بومرداس', country: 'الجزائر', lat: 36.758, lng: 3.472, tz: 1 },
+            { key: 'dz31', city: 'الطارف', country: 'الجزائر', lat: 36.771, lng: 8.313, tz: 1 },
+            { key: 'dz32', city: 'تندواف', country: 'الجزائر', lat: 27.671, lng: -8.136, tz: 1 },
+            { key: 'dz33', city: 'تيسمسيلت', country: 'الجزائر', lat: 35.606, lng: 1.811, tz: 1 },
+            { key: 'dz34', city: 'الوادي', country: 'الجزائر', lat: 33.356, lng: 6.863, tz: 1 },
+            { key: 'dz35', city: 'خنشلة', country: 'الجزائر', lat: 35.435, lng: 7.143, tz: 1 },
+            { key: 'dz36', city: 'سوق أهراس', country: 'الجزائر', lat: 36.292, lng: 7.951, tz: 1 },
+            { key: 'dz37', city: 'تيبازة', country: 'الجزائر', lat: 36.589, lng: 2.448, tz: 1 },
+            { key: 'dz38', city: 'مليلة', country: 'الجزائر', lat: 36.45, lng: 6.264, tz: 1 },
+            { key: 'dz39', city: 'عين الدفلة', country: 'الجزائر', lat: 36.264, lng: 1.968, tz: 1 },
+            { key: 'dz40', city: 'النعامة', country: 'الجزائر', lat: 33.267, lng: -0.314, tz: 1 },
+            { key: 'dz41', city: 'عين تموشنت', country: 'الجزائر', lat: 35.298, lng: -1.143, tz: 1 },
+            { key: 'dz42', city: 'غرداية', country: 'الجزائر', lat: 32.489, lng: 3.667, tz: 1 },
+            { key: 'dz43', city: 'غليزان', country: 'الجزائر', lat: 35.744, lng: 0.553, tz: 1 },
+            { key: 'dz44', city: 'تيميمون', country: 'الجزائر', lat: 29.263, lng: 0.241, tz: 1 },
+            { key: 'dz45', city: 'برج باجي مختر', country: 'الجزائر', lat: 21.327, lng: 0.946, tz: 1 },
+            { key: 'dz46', city: 'أولاد جلال', country: 'الجزائر', lat: 34.418, lng: 5.069, tz: 1 },
+            { key: 'dz47', city: 'بني عباس', country: 'الجزائر', lat: 30.134, lng: -2.174, tz: 1 },
+            { key: 'dz48', city: 'عين صالح', country: 'الجزائر', lat: 27.194, lng: 2.484, tz: 1 },
+            { key: 'dz49', city: 'عين قزام', country: 'الجزائر', lat: 19.57, lng: 5.77, tz: 1 },
+            { key: 'dz50', city: 'تقرت', country: 'الجزائر', lat: 33.105, lng: 6.058, tz: 1 },
+            { key: 'dz51', city: 'جانت', country: 'الجزائر', lat: 24.551, lng: 9.48, tz: 1 },
+            { key: 'dz52', city: 'المجير', country: 'الجزائر', lat: 33.946, lng: 5.92, tz: 1 },
+            { key: 'dz53', city: 'المنيعة', country: 'الجزائر', lat: 30.583, lng: 2.883, tz: 1 },
+        ];
+
+        const prayerMeta = [
+            { key: 'fajr',    name: 'الفجر',   icon: 'fa-cloud-moon' },
+            { key: 'sunrise', name: 'الشروق',  icon: 'fa-sun' },
+            { key: 'dhuhr',   name: 'الظهر',   icon: 'fa-sun' },
+            { key: 'asr',     name: 'العصر',   icon: 'fa-cloud-sun' },
+            { key: 'maghrib', name: 'المغرب',  icon: 'fa-cloud-moon' },
+            { key: 'isha',    name: 'العشاء',  icon: 'fa-star' }
+        ];
+
+        // ===== الحالة =====
+        let place = {
+            key: cities[0].key,
+            lat: cities[0].lat,
+            lng: cities[0].lng,
+            tz: cities[0].tz,
+            name: cities[0].city + '، ' + cities[0].country
+        };
+        const today = new Date();
+        let view = { y: today.getFullYear(), m: today.getMonth() };
+        let selected = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+        // ===== تنسيقات =====
+        const AR_DIGITS = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+        const toLatin = s => String(s).replace(/[٠-٩]/g, d => String(AR_DIGITS.indexOf(d)));
+
+        let gregMonthFmt, gregDayFmt, hijriCellFmt, hijriFullFmt;
+        try {
+            gregMonthFmt = new Intl.DateTimeFormat('ar-EG-u-nu-latn', { month: 'long', year: 'numeric' });
+            gregDayFmt = new Intl.DateTimeFormat('ar-EG-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            hijriCellFmt = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', { day: 'numeric', month: 'short' });
+            hijriFullFmt = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', { day: 'numeric', month: 'long', year: 'numeric' });
+        } catch (e) {
+            gregMonthFmt = new Intl.DateTimeFormat('ar-EG-u-nu-latn', { month: 'long', year: 'numeric' });
+            gregDayFmt = new Intl.DateTimeFormat('ar-EG-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            hijriCellFmt = new Intl.DateTimeFormat('ar-SA', { day: 'numeric', month: 'short' });
+            hijriFullFmt = new Intl.DateTimeFormat('ar-SA', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        const sameDay = (a, b) =>
+            a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+        // ===== حساب مواقيت الصلاة ليوم معيّن =====
+        function calculatePrayerTimes(lat, lng, tz, date) {
+            const start = new Date(date.getFullYear(), 0, 0);
+            const dayOfYear = Math.floor((date - start) / 86400000);
+
+            const declination = -23.44 * Math.cos((360 / 365) * (dayOfYear + 10) * Math.PI / 180);
+
+            const b = (360 / 365) * (dayOfYear - 81) * Math.PI / 180;
+            const eqTime = 9.87 * Math.sin(2 * b) - 7.53 * Math.cos(b) - 1.5 * Math.sin(b);
+
+            const solarNoon = 12 - (lng / 15) - (eqTime / 60) + tz;
+
+            function hourAngle(angleDeg) {
+                const latR = lat * Math.PI / 180;
+                const decR = declination * Math.PI / 180;
+                const cosH = (-Math.sin(angleDeg * Math.PI / 180) - Math.sin(latR) * Math.sin(decR)) /
+                             (Math.cos(latR) * Math.cos(decR));
+                if (cosH > 1 || cosH < -1) return null;
+                return Math.acos(cosH) * 180 / Math.PI / 15;
+            }
+
+            const fajrHA    = hourAngle(18);
+            const sunriseHA = hourAngle(0.833);
+            const ishaHA    = hourAngle(17);
+
+            const asrAngle = -Math.atan(1 / (1 + Math.tan(Math.abs(lat - declination) * Math.PI / 180))) * 180 / Math.PI;
+            const asrHA = hourAngle(asrAngle);
+
+            const rawTimes = {
+                fajr:    fajrHA    ? solarNoon - fajrHA    : null,
+                sunrise: sunriseHA ? solarNoon - sunriseHA : null,
+                dhuhr:   solarNoon + 0.05,
+                asr:     asrHA     ? solarNoon + asrHA     : null,
+                maghrib: sunriseHA ? solarNoon + sunriseHA : null,
+                isha:    ishaHA    ? solarNoon + ishaHA    : null
+            };
+
+            function fmt(h) {
+                if (h === null || isNaN(h)) return null;
+                let hours = Math.floor(h);
+                let mins = Math.floor((h - hours) * 60);
+                if (mins < 0) { mins += 60; hours -= 1; }
+                if (hours < 0) hours += 24;
+                if (hours >= 24) hours -= 24;
+                return {
+                    h: hours,
+                    m: mins,
+                    str: String(hours).padStart(2, '0') + ':' + String(mins).padStart(2, '0')
+                };
+            }
+
+            const result = {};
+            for (const k in rawTimes) result[k] = fmt(rawTimes[k]);
+            return result;
+        }
+
+        // ===== الموقع =====
+        function applyPlace(p, save) {
+            place = p;
+            const sel = document.getElementById('citySelect');
+            if (sel && p.key) sel.value = p.key;
+            document.getElementById('placeLabel').textContent = 'الموقع: ' + p.name;
+            render();
+            if (save) {
+                try { localStorage.setItem(STORE_KEY, JSON.stringify(p)); } catch (e) {}
+            }
+        }
+
+                function haversineKm(lat1, lng1, lat2, lng2) {
+            const R = 6371, r = Math.PI / 180;
+            const dLat = (lat2 - lat1) * r, dLng = (lng2 - lng1) * r;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            return 2 * R * Math.asin(Math.sqrt(a));
+        }
+
+        function reverseGeocodeName(lat, lng) {
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), 6000);
+            return fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng + '&zoom=10&accept-language=ar&addressdetails=1', { signal: ctrl.signal })
+                .then(res => (res.ok ? res.json() : null))
+                .then(data => {
+                    clearTimeout(timer);
+                    const a = data && data.address;
+                    if (!a) return null;
+                    const city = a.town || a.city || a.village || a.county || a.municipality || a.suburb || a.hamlet;
+                    const state = a.state;
+                    if (city && state && city !== state && state.indexOf(city) === -1 && city.indexOf(state) === -1) {
+                        return city + ' \u060c ' + state;
+                    }
+                    return city || state || null;
+                })
+                .catch(() => { clearTimeout(timer); return null; });
+        }
+
+function nearestCity(lat, lng) {
+            let closest = cities[0];
+            let minDist = Infinity;
+            for (const c of cities) {
+                const d = haversineKm(lat, lng, c.lat, c.lng);
+                if (d < minDist) { minDist = d; closest = c; }
+            }
+            return closest;
+        }
+
+                function detectLocation() {
+            if (!navigator.geolocation) {
+                showToast('المتصفح لا يدعم تحديد الموقع');
+                return;
+            }
+
+            showToast('جاري تحديد موقعك...');
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    const closest = nearestCity(lat, lng);
+                    const fallback = closest.city + '، ' + closest.country;
+
+                    applyPlace({
+                        key: closest.key,
+                        lat: lat,
+                        lng: lng,
+                        tz: closest.tz,
+                        name: fallback
+                    }, true);
+                    showToast('تم تحديد الموقع: ' + fallback);
+                    reverseGeocodeName(lat, lng).then(name => {
+                        if (name) {
+                            applyPlace({
+                                key: closest.key,
+                                lat: lat,
+                                lng: lng,
+                                tz: closest.tz,
+                                name: name
+                            }, true);
+                        }
+                    });
+                },
+                () => {
+                    showToast('تعذر تحديد الموقع، اختر مدينة يدويًا');
+                },
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+            );
+        }
+
+        function loadSavedPlace() {
+            try {
+                const raw = localStorage.getItem(STORE_KEY);
+                if (!raw) return false;
+                const p = JSON.parse(raw);
+                if (typeof p.lat !== 'number' || typeof p.lng !== 'number') return false;
+                const city = cities.find(c => c.key === p.key) || nearestCity(p.lat, p.lng);
+                applyPlace({
+                    key: p.key || city.key,
+                    lat: p.lat,
+                    lng: p.lng,
+                    tz: city.tz,
+                    name: p.name || (city.city + '، ' + city.country)
+                }, false);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // ===== عرض التقويم =====
+        const isWide = () => window.matchMedia('(min-width: 701px)').matches;
+
+        function render() {
+            renderTitle();
+            if (isWide()) renderGrid();
+            renderDay();
+        }
+
+        function renderTitle() {
+            const first = new Date(view.y, view.m, 1);
+            const last = new Date(view.y, view.m + 1, 0);
+            document.getElementById('monthTitle').textContent = gregMonthFmt.format(first);
+            document.getElementById('monthHijri').textContent =
+                toLatin(hijriCellFmt.format(first)) + ' — ' + toLatin(hijriCellFmt.format(last));
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('calGrid');
+            grid.innerHTML = '';
+
+            const first = new Date(view.y, view.m, 1);
+            const start = new Date(view.y, view.m, 1 - first.getDay());
+
+            for (let i = 0; i < 42; i++) {
+                const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+                const times = calculatePrayerTimes(place.lat, place.lng, place.tz, d);
+
+                const cell = document.createElement('div');
+                cell.className = 'cal-cell';
+                if (d.getMonth() !== view.m) cell.classList.add('dim');
+                if (sameDay(d, today)) cell.classList.add('today');
+                if (sameDay(d, selected)) cell.classList.add('selected');
+
+                const top = document.createElement('div');
+                top.className = 'cc-top';
+                top.innerHTML =
+                    '<span class="cc-day">' + d.getDate() + '</span>' +
+                    '<span class="cc-hijri">' + toLatin(hijriCellFmt.format(d)) + '</span>';
+
+                const list = document.createElement('div');
+                list.className = 'cc-times';
+                prayerMeta.forEach(p => {
+                    const s = document.createElement('span');
+                    s.textContent = times[p.key] ? times[p.key].str : '--:--';
+                    list.appendChild(s);
+                });
+
+                cell.appendChild(top);
+                cell.appendChild(list);
+
+                cell.addEventListener('click', () => {
+                    if (d.getMonth() !== view.m || d.getFullYear() !== view.y) {
+                        view = { y: d.getFullYear(), m: d.getMonth() };
+                    }
+                    selected = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                    render();
+                });
+
+                grid.appendChild(cell);
+            }
+        }
+
+        function renderDay() {
+            const times = calculatePrayerTimes(place.lat, place.lng, place.tz, selected);
+            const dateTxt = gregDayFmt.format(selected);
+            const hijriTxt = toLatin(hijriFullFmt.format(selected));
+
+            document.getElementById('detailDate').textContent = dateTxt;
+            document.getElementById('detailHijri').textContent = hijriTxt;
+            document.getElementById('mDate').textContent = dateTxt;
+            document.getElementById('mHijri').textContent = hijriTxt;
+
+            buildRows(document.getElementById('detailList'), times);
+            buildRows(document.getElementById('mList'), times);
+        }
+
+        function buildRows(list, times) {
+            list.innerHTML = '';
+
+            const isToday = sameDay(selected, today);
+            const nowMin = today.getHours() * 60 + today.getMinutes();
+            let currentKey = null;
+            let nextKey = null;
+
+            if (isToday) {
+                for (const p of prayerMeta) {
+                    const t = times[p.key];
+                    if (!t) continue;
+                    const mins = t.h * 60 + t.m;
+                    if (mins <= nowMin) currentKey = p.key;
+                    else { nextKey = p.key; break; }
+                }
+            }
+
+            prayerMeta.forEach(p => {
+                const t = times[p.key];
+                if (!t) return;
+
+                const row = document.createElement('div');
+                row.className = 'prayer-row';
+                if (isToday) {
+                    if (p.key === currentKey) row.classList.add('active');
+                    else {
+                        const order = prayerMeta.map(x => x.key);
+                        const ci = order.indexOf(currentKey);
+                        const pi = order.indexOf(p.key);
+                        if (ci !== -1 && pi < ci) row.classList.add('passed');
+                    }
+                }
+
+                row.innerHTML =
+                    '<div class="prayer-left">' +
+                        '<div class="prayer-row-icon"><i class="fas ' + p.icon + '"></i></div>' +
+                        '<div class="prayer-row-name">' + p.name + '</div>' +
+                    '</div>' +
+                    '<div class="prayer-row-time">' + t.str + '</div>';
+
+                list.appendChild(row);
+            });
+
+            if (isToday && nextKey) {
+                const next = prayerMeta.find(x => x.key === nextKey);
+                const t = times[nextKey];
+                const note = document.createElement('div');
+                note.className = 'cal-legend';
+                note.style.marginTop = '12px';
+                note.innerHTML = 'الصلاة القادمة: <b>' + next.name + ' — ' + t.str + '</b>';
+                list.appendChild(note);
+            }
+        }
+
+        // ===== التنقل بين الشهور =====
+        function shiftMonth(delta) {
+            const d = new Date(view.y, view.m + delta, 1);
+            view = { y: d.getFullYear(), m: d.getMonth() };
+            selected = new Date(d.getFullYear(), d.getMonth(), 1);
+            render();
+        }
+
+        function shiftView(delta) {
+            const d = new Date(view.y, view.m + delta, 1);
+            view = { y: d.getFullYear(), m: d.getMonth() };
+        }
+
+        // ===== التنقل بين الأيام (الهاتف) =====
+        function shiftDay(delta) {
+            selected = new Date(selected.getFullYear(), selected.getMonth(), selected.getDate() + delta);
+            view = { y: selected.getFullYear(), m: selected.getMonth() };
+            render();
+        }
+
+        // ===== منتقي الشهر المنبثق (الهاتف) =====
+        const calModal = document.getElementById('calModal');
+
+        function openCalModal() {
+            renderModal();
+            calModal.classList.add('open');
+            calModal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCalModal() {
+            if (!calModal.classList.contains('open')) return;
+            calModal.classList.remove('open');
+            calModal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        }
+
+        function renderModal() {
+            const first = new Date(view.y, view.m, 1);
+            const last = new Date(view.y, view.m + 1, 0);
+            document.getElementById('cmTitle').textContent = gregMonthFmt.format(first);
+            document.getElementById('cmHijri').textContent =
+                toLatin(hijriCellFmt.format(first)) + ' — ' + toLatin(hijriCellFmt.format(last));
+
+            const grid = document.getElementById('cmGrid');
+            grid.innerHTML = '';
+
+            const start = new Date(view.y, view.m, 1 - first.getDay());
+
+            for (let i = 0; i < 42; i++) {
+                const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+                const day = document.createElement('button');
+                day.type = 'button';
+                day.className = 'cm-day';
+                if (d.getMonth() !== view.m) day.classList.add('dim');
+                if (sameDay(d, today)) day.classList.add('today');
+                if (sameDay(d, selected)) day.classList.add('selected');
+                day.textContent = d.getDate();
+
+                day.addEventListener('click', () => {
+                    selected = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                    view = { y: d.getFullYear(), m: d.getMonth() };
+                    render();
+                    closeCalModal();
+                });
+
+                grid.appendChild(day);
+            }
+        }
+
+        // ===== رسالة تنبيه =====
+        let toastTimer = null;
+        const toastQueue = [];
+        let toastBusy = false;
+        function showToast(msg) {
+            toastQueue.push(msg);
+            if (!toastBusy) nextToast();
+        }
+        function nextToast() {
+            if (!toastQueue.length) { toastBusy = false; return; }
+            toastBusy = true;
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = toastQueue.shift();
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(nextToast, 350);
+            }, 3000);
+        }
+
+        // ===== القائمة =====
+        const menuBtn = document.getElementById('menuBtn');
+        const siteNav = document.getElementById('siteNav');
+
+        function setNavIcon(open) {
+            const icon = menuBtn.querySelector('i');
+            if (icon) icon.className = open ? 'fas fa-xmark' : 'fas fa-bars';
+        }
+
+        function closeNav() {
+            siteNav.classList.remove('open');
+            menuBtn.setAttribute('aria-expanded', 'false');
+            setNavIcon(false);
+        }
+
+        menuBtn.addEventListener('click', () => {
+            const open = siteNav.classList.toggle('open');
+            menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            setNavIcon(open);
+        });
+
+        siteNav.addEventListener('click', (e) => {
+            if (e.target.closest('a') || e.target.closest('.nav-gps-btn')) closeNav();
+        });
+
+        // ===== خلفية الهيدر عند التمرير =====
+        const topBar = document.querySelector('.top-bar');
+        function syncHeaderBg() {
+            topBar.classList.toggle('is-scrolled', window.scrollY > 8);
+        }
+        window.addEventListener('scroll', syncHeaderBg, { passive: true });
+        syncHeaderBg();
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.site-nav') && !e.target.closest('#menuBtn')) closeNav();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeNav();
+                closeCalModal();
+            }
+        });
+
+        // ===== التشغيل =====
+        document.addEventListener('DOMContentLoaded', () => {
+            // قائمة المدن
+            const sel = document.getElementById('citySelect');
+            cities.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.key;
+                opt.textContent = c.city + ' — ' + c.country;
+                sel.appendChild(opt);
+            });
+            sel.addEventListener('change', () => {
+                const c = cities.find(x => x.key === sel.value);
+                if (!c) return;
+                applyPlace({
+                    key: c.key,
+                    lat: c.lat,
+                    lng: c.lng,
+                    tz: c.tz,
+                    name: c.city + '، ' + c.country
+                }, true);
+                showToast('تم اختيار: ' + c.city);
+            });
+
+            // التنقل
+            document.getElementById('prevMonth').addEventListener('click', () => shiftMonth(-1));
+            document.getElementById('nextMonth').addEventListener('click', () => shiftMonth(1));
+            document.getElementById('todayBtn').addEventListener('click', () => {
+                view = { y: today.getFullYear(), m: today.getMonth() };
+                selected = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                render();
+            });
+
+            // عرض الهاتف: تنقل الأيام + منتقي الشهر
+            document.getElementById('mPrevDay').addEventListener('click', () => shiftDay(-1));
+            document.getElementById('mNextDay').addEventListener('click', () => shiftDay(1));
+            document.getElementById('mCalBtn').addEventListener('click', openCalModal);
+            document.getElementById('calModalBd').addEventListener('click', closeCalModal);
+            document.getElementById('cmPrev').addEventListener('click', () => {
+                shiftView(-1);
+                renderModal();
+            });
+            document.getElementById('cmNext').addEventListener('click', () => {
+                shiftView(1);
+                renderModal();
+            });
+
+            // إعادة بناء الشبكة عند تجاوز حد الشاشة
+            let calResizeTimer = null;
+            window.addEventListener('resize', () => {
+                clearTimeout(calResizeTimer);
+                calResizeTimer = setTimeout(() => {
+                    if (isWide()) {
+                        renderTitle();
+                        renderGrid();
+                    }
+                }, 200);
+            });
+
+            // الموقع
+            if (!loadSavedPlace()) applyPlace(place, false);
+        });
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('sw.js').catch(function () {});
+            });
+        }
+    </script>
+
+</body>
+</html>
