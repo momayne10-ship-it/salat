@@ -142,7 +142,7 @@ public class AdhanService extends Service {
             player.setAudioAttributes(alarmAttrs());
             AssetFileDescriptor afd = getResources().openRawResourceFd(R.raw.athan_default);
             if (afd == null) { stopAll(); return; }
-            player.setDataSource(afd.getFileDescriptor(), afd.getOffset(), afd.getLength());
+            player.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
             afd.close();
             player.setOnPreparedListener(p -> {
                 prepared = true;
