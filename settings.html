@@ -1,4 +1,4 @@
-﻿﻿﻿<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -1102,6 +1102,27 @@
             </p>
         </section>
 
+        <!-- تثبيت التطبيق -->
+        <div class="section-title">
+            <i class="fas fa-download"></i>
+            تثبيت التطبيق
+        </div>
+
+        <section class="panel">
+            <div class="panel-head">
+                <span class="ph-icon"><i class="fas fa-download"></i></span>
+                <h3>تثبيت التطبيق</h3>
+            </div>
+
+            <div class="row">
+                <div class="row-text">
+                    <div class="row-title">تطبيق صلاتي على هاتفك</div>
+                    <div class="row-sub">ثبّته ليعمل بسرعة ويعرض المواقيت دون اتصال</div>
+                </div>
+                <button class="btn-gold" id="installBtn" type="button"><i class="fas fa-download"></i> تحميل التطبيق</button>
+            </div>
+        </section>
+
         <!-- المشاركة -->
         <div class="section-title">
             <i class="fas fa-share-nodes"></i>
@@ -1816,6 +1837,35 @@
                 navigator.serviceWorker.register('sw.js').catch(function () {});
             });
         }
+
+        // تفعيل إذن الإشعارات عند أول لمسة
+        if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+            document.addEventListener('pointerdown', function () {
+                Notification.requestPermission().then(function (p) {
+                    if (p === 'granted' && typeof showToast === 'function') showToast('تم تفعيل الإشعارات');
+                }).catch(function () {});
+            }, { once: true });
+        }
+
+        // تثبيت التطبيق
+        var deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', function (e) {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+        window.addEventListener('appinstalled', function () {
+            deferredPrompt = null;
+            if (typeof showToast === 'function') showToast('تم تثبيت التطبيق بنجاح');
+        });
+        var installBtnEl = document.getElementById('installBtn');
+        if (installBtnEl) installBtnEl.addEventListener('click', function () {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(function () { deferredPrompt = null; });
+            } else if (typeof showToast === 'function') {
+                showToast('من قائمة المتصفح اختر «إضافة إلى الشاشة الرئيسية»');
+            }
+        });
     </script>
 </body>
 </html>

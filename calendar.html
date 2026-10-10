@@ -1,4 +1,4 @@
-﻿﻿﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
@@ -611,7 +611,6 @@
             bottom: 0;
             right: 0;
             width: 4px;
-            background: linear-gradient(180deg, var(--gold), var(--gold-light));
             transform: scaleY(0);
             transform-origin: top;
             transition: transform 0.4s ease;
@@ -622,20 +621,11 @@
             box-shadow: var(--shadow-md);
         }
 
-        .prayer-row:hover::before {
-            transform: scaleY(1);
-        }
-
         .prayer-row.active {
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             color: var(--white);
             box-shadow: 0 8px 30px rgba(13, 59, 46, 0.3);
             transform: none;
-        }
-
-        .prayer-row.active::before {
-            transform: scaleY(1);
-            background: var(--gold-light);
         }
 
         .prayer-row.passed {
@@ -1994,6 +1984,16 @@ function nearestCity(lat, lng) {
                 navigator.serviceWorker.register('sw.js').catch(function () {});
             });
         }
+
+        // تفعيل إذن الإشعارات عند أول لمسة
+        if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+            document.addEventListener('pointerdown', function () {
+                Notification.requestPermission().then(function (p) {
+                    if (p === 'granted' && typeof showToast === 'function') showToast('تم تفعيل الإشعارات');
+                }).catch(function () {});
+            }, { once: true });
+        }
+
     </script>
 
 </body>

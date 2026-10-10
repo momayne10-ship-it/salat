@@ -1,4 +1,4 @@
-﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -2368,6 +2368,16 @@
                 navigator.serviceWorker.register('sw.js').catch(function () {});
             });
         }
+
+        // تفعيل إذن الإشعارات عند أول لمسة
+        if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+            document.addEventListener('pointerdown', function () {
+                Notification.requestPermission().then(function (p) {
+                    if (p === 'granted' && typeof showToast === 'function') showToast('تم تفعيل الإشعارات');
+                }).catch(function () {});
+            }, { once: true });
+        }
+
     </script>
 </body>
 </html>

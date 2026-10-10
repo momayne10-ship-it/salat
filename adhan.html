@@ -1,4 +1,4 @@
-﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
@@ -1764,6 +1764,16 @@ function nearestCity(lat, lng) {
                 navigator.serviceWorker.register('sw.js').catch(function () {});
             });
         }
+
+        // تفعيل إذن الإشعارات عند أول لمسة
+        if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+            document.addEventListener('pointerdown', function () {
+                Notification.requestPermission().then(function (p) {
+                    if (p === 'granted' && typeof showToast === 'function') showToast('تم تفعيل الإشعارات');
+                }).catch(function () {});
+            }, { once: true });
+        }
+
     </script>
 </body>
 </html>
