@@ -1010,7 +1010,13 @@
                 .catch(() => { clearTimeout(timer); return null; });
         }
 
-        function locateMe() {
+                function nativeApp() {
+            try {
+                return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SalatNative) || null;
+            } catch (e) { return null; }
+        }
+
+function locateMe() {
             if (!navigator.geolocation) {
                 showToast('المتصفح لا يدعم تحديد الموقع');
                 return;
@@ -1018,6 +1024,8 @@
 
             showToast('جاري تحديد موقعك...');
 
+            const nb = nativeApp();
+            const doLoc = () => {
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     const lat = pos.coords.latitude;
@@ -1054,6 +1062,15 @@
                 },
                 { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
             );
+            };
+            if (nb) {
+                try {
+                    nb.requestLocationPermission().then(r => {
+                        if (r && r.granted) { doLoc(); }
+                        else { showToast('تم رفض إذن الموقع'); }
+                    }).catch(() => { doLoc(); });
+                } catch (e) { doLoc(); }
+            } else { doLoc(); }
         }
 
         function loadSavedPlace() {

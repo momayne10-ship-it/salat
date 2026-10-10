@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -198,5 +199,37 @@ public class SalatPlugin extends Plugin {
     private int requestCode(String id) {
         int h = id.hashCode() & 0x7fffffff;
         return h == 0 ? 1 : h;
+    }
+
+    @PluginMethod
+    public void requestLocationPermission(PluginCall call) {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
+            JSObject ret = new JSObject();
+            ret.put("granted", true);
+            call.resolve(ret);
+            return;
+        }
+        String[] perms = {
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION
+        };
+        boolean granted = true;
+        for (String p : perms) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(getContext(), p)
+                    != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                granted = false;
+                break;
+            }
+        }
+        if (granted) {
+            JSObject ret = new JSObject();
+            ret.put("granted", true);
+            call.resolve(ret);
+            return;
+        }
+        getActivity().requestPermissions(perms, 1001);
+        JSObject ret = new JSObject();
+        ret.put("granted", false);
+        call.resolve(ret);
     }
 }
