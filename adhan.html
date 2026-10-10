@@ -1,4 +1,4 @@
-﻿﻿﻿﻿<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
@@ -675,13 +675,13 @@
             }
 
             .site-nav {
-                position: fixed;
+                position: absolute;
                 top: calc(var(--header-h) + 4px);
                 left: 1rem;
                 width: 85%;
                 max-width: 300px;
                 display: block;
-                background: linear-gradient(165deg, rgba(13, 59, 46, 0.97), rgba(8, 40, 31, 0.98));
+                background: linear-gradient(165deg, #0d3b2e, #08281f);
                 -webkit-backdrop-filter: blur(30px);
                 backdrop-filter: blur(30px);
                 border-radius: 1.5rem;
@@ -695,7 +695,20 @@
                 transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
                 z-index: 999;
                 max-height: calc(100vh - var(--header-h) - 2rem);
-                overflow-y: auto;
+                overflow: visible;
+            }
+
+            /* ===== ذيل الرسالة: مثلث يتدلى من زر القائمة إلى البطاقة ===== */
+            .site-nav::before {
+                content: "";
+                position: absolute;
+                top: -15px;
+                left: 16px;
+                width: 0;
+                height: 0;
+                border-left: 14px solid transparent;
+                border-right: 14px solid transparent;
+                border-bottom: 21px solid #0d3b2e;
             }
 
             .site-nav.open {
@@ -1529,11 +1542,83 @@ function nearestCity(lat, lng) {
             state.tzIana = tzIana || null;
             state.hijri = hijri;
             state.dayKey = dayKeyOf(locParts());
+            syncNativeAlarms();
+            setTimeout(syncNativeAlarms, 2500); // إعادة محاولة بعد جهوزية جسر التطبيق
+        }
+
+        // ===== جسر التطبيق الأصلي (Android) =====
+        function nativeApp() {
+            try {
+                return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SalatNative) || null;
+            } catch (e) { return null; }
+        }
+
+        function syncNativeAlarms() {
+            const nb = nativeApp();
+            if (!nb || !nb.scheduleAlarms) return;
+            if (!state.auto || !state.timings) {
+                try { nb.cancelAlarms(); } catch (e) {}
+                return;
+            }
+            try {
+                const a = adhanById(state.choice) || adhans[0];
+                const src = a ? cdnUrl(a.file) : '';
+                const now = new Date();
+                const out = [];
+                const addDay = (base, times) => {
+                    for (const k of ADHAN_KEYS) {
+                        const t = times && times[k];
+                        if (!t || !t.h && t.h !== 0) continue;
+                        const at = new Date(base.getFullYear(), base.getMonth(), base.getDate(), t.h, t.m, 0, 0).getTime();
+                        if (at > Date.now() + 1500) {
+                            out.push({
+                                id: base.toDateString() + '|' + k,
+                                title: 'حان الآن وقت ' + nameOf(k),
+                                at: at,
+                                src: src
+                            });
+                        }
+                    }
+                };
+                addDay(now, state.timings);
+                try {
+                    const tm = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                    addDay(tm, localCalc(tm, state.tzOff));
+                } catch (e) {}
+                nb.scheduleAlarms({ alarms: out });
+            } catch (e) {}
         }
 
         // ===== الأذان التلقائي =====
         let lastPlayedKey = null;
         try { lastPlayedKey = localStorage.getItem(K_LAST); } catch (e) {}
+
+        // إشعار بأيقونة التطبيق عند دخول وقت الأذان
+        function adhanNotify(name, t) {
+            const nb = nativeApp();
+            if (nb) {
+                try { nb.notify({ tag: 'salat-adhan', title: 'حان الآن وقت أذان ' + name, body: 'الأذان عند ' + (t.str || '') }); } catch (e) {}
+                return;
+            }
+            if (typeof Notification === 'undefined') return;
+            if (Notification.permission !== 'granted') return;
+            const opts = {
+                body: 'الأذان عند ' + (t.str || ''),
+                tag: 'salat-adhan',
+                icon: 'icons/icon-192.png',
+                badge: 'icons/icon-192.png'
+            };
+            const fallback = function () {
+                try { new Notification('حان الآن وقت أذان ' + name, opts); } catch (e) {}
+            };
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(function (reg) {
+                    reg.showNotification('حان الآن وقت أذان ' + name, opts).catch(fallback);
+                }).catch(fallback);
+            } else {
+                fallback();
+            }
+        }
 
         function tick() {
             if (!state.timings) return;
@@ -1552,13 +1637,17 @@ function nearestCity(lat, lng) {
                 for (const k of ADHAN_KEYS) {
                     const t = state.timings[k];
                     if (!t) continue;
-                    if (t.h * 60 + t.m === nowMin) {
+                    const pMin = t.h * 60 + t.m;
+                    // نافذة ملاحقة 5 دقائق: تلتقط الأذان حتى لو كان التطبيق موقوفًا/في الخلفية
+                    if (nowMin >= pMin && nowMin - pMin <= 5) {
                         const lk = dk + ':' + k;
                         if (lastPlayedKey !== lk) {
                             lastPlayedKey = lk;
                             try { localStorage.setItem(K_LAST, lk); } catch (e) {}
-                            startPlay(state.choice, true);
+                            // في التطبيق الأصلي يشغّل الخدمة الصوت (تنبيه واحد)
+                            if (!nativeApp()) startPlay(state.choice, true);
                             showToast('حان الآن وقت أذان ' + nameOf(k));
+                            adhanNotify(nameOf(k), t);
                             break;
                         }
                     }
@@ -1666,6 +1755,7 @@ function nearestCity(lat, lng) {
                     const playingThis = curId === a.id && !audio.paused;
                     state.choice = a.id;
                     try { localStorage.setItem(K_CHOICE, a.id); } catch (e) {}
+                    syncNativeAlarms();
                     if (playingThis) stopPlay(); else startPlay(a.id, true);
                     updateCards();
                 });
@@ -1773,6 +1863,16 @@ function nearestCity(lat, lng) {
                 }).catch(function () {});
             }, { once: true });
         }
+
+        // إذن إشعارات التطبيق الأصلي (Android) عند أول لمسة
+        document.addEventListener('pointerdown', function () {
+            try {
+                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SalatNative) {
+                    window.Capacitor.Plugins.SalatNative.requestPermission();
+                }
+            } catch (e) {}
+        }, { once: true });
+
 
     </script>
 </body>

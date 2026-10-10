@@ -1,3 +1,11 @@
 .DS_Store
 Thumbs.db
 *.log
+node_modules/
+www/
+android/app/build/
+android/.gradle/
+android/app/src/main/assets/public/
+android/capacitor-cordova-android-plugins/build/
+android/local.properties
+

@@ -5,11 +5,11 @@
    - Font Awesome CDN: cache-first
    - Aladhan API: cache-first (date-specific prayer times, safe for the day)
    - Nominatim: network-first with cache fallback
-   - sounds/*.mp3: cache-first (on-demand)
+   - sounds/*.mp3: precached at install (offline-ready) + Range (206) served from cache
    - everything else: stale-while-revalidate
 */
 
-const CACHE_NAME = 'salat-v1';
+const CACHE_NAME = 'salat-v2';
 
 const APP_SHELL = [
     './',
@@ -31,7 +31,12 @@ const APP_SHELL = [
     'icons/icon-512.png',
     'icons/icon-maskable-512.png',
     'icons/apple-touch-icon.svg',
-    'icons/apple-touch-icon.png'
+    'icons/apple-touch-icon.png',
+    'sounds/sound1.mp3',
+    'sounds/sound2.mp3',
+    'sounds/sound3.mp3',
+    'sounds/sound4.mp3',
+    'sounds/sound5.mp3'
 ];
 
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
@@ -139,6 +144,43 @@ function networkFirstForNavigation(event) {
     );
 }
 
+/* Range requests for sounds (audio seeking) — synthesize 206 from the cached full
+   file so playback works offline; bypass online when not cached yet. */
+function respondRange(cached, rangeHeader) {
+    return cached.arrayBuffer().then((ab) => {
+        const size = ab.byteLength;
+        let start = 0;
+        let end = size - 1;
+        const m = /bytes=(\d*)-(\d*)/.exec(rangeHeader || '');
+        if (m) {
+            if (m[1] !== '') start = parseInt(m[1], 10);
+            if (m[2] !== '') end = Math.min(parseInt(m[2], 10), size - 1);
+        }
+        if (isNaN(start) || start < 0 || start >= size) {
+            return new Response(null, { status: 416, statusText: 'Range Not Satisfiable' });
+        }
+        const chunk = ab.slice(start, end + 1);
+        const headers = new Headers({
+            'Content-Type': cached.headers.get('Content-Type') || 'audio/mpeg',
+            'Content-Length': String(chunk.byteLength),
+            'Content-Range': 'bytes ' + start + '-' + end + '/' + size,
+            'Accept-Ranges': 'bytes',
+            'Cache-Control': 'max-age=31536000'
+        });
+        return new Response(chunk, { status: 206, statusText: 'Partial Content', headers: headers });
+    });
+}
+
+function serveRangeFromCache(event) {
+    const request = event.request;
+    event.respondWith(
+        caches.match(request).then((cached) => {
+            if (cached) return respondRange(cached, request.headers.get('Range'));
+            return fetch(request);
+        }).catch(() => Response.error())
+    );
+}
+
 /* ---- lifecycle ---- */
 
 self.addEventListener('install', (event) => {
@@ -176,8 +218,14 @@ self.addEventListener('fetch', (event) => {
     /* let the browser handle non-http(s) schemes (data:, blob:, chrome-extension:, ...) */
     if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
 
-    /* let the browser handle audio Range requests (seeking) — never cache-range */
-    if (request.headers.has('Range')) return;
+    /* audio Range requests (seeking): 206 from cache for offline — else bypass */
+    if (request.headers.has('Range')) {
+        if (isSoundUrl(url)) {
+            serveRangeFromCache(event);
+            return;
+        }
+        return;
+    }
 
     if (request.mode === 'navigate') {
         networkFirstForNavigation(event);

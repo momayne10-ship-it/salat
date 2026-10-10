@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">صلاتي</string>
+    <string name="title_activity_main">صلاتي</string>
+    <string name="package_name">com.gmsoft.salat</string>
+    <string name="custom_url_scheme">com.gmsoft.salat</string>
+</resources>

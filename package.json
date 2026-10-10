@@ -1,0 +1,16 @@
+{
+  "name": "salat",
+  "version": "1.0.0",
+  "private": true,
+  "description": "صلاتي — تطبيق مواقيت الصلاة (Capacitor Android)",
+  "scripts": {
+    "www": "node scripts/mkwww.js",
+    "sync": "npm run www && cap sync android",
+    "apk": "npm run sync && cd android && gradlew.bat assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.6.9",
+    "@capacitor/cli": "^7.6.9",
+    "@capacitor/core": "^7.6.9"
+  }
+}

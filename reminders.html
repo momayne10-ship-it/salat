@@ -1,4 +1,4 @@
-﻿﻿﻿﻿<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -1034,13 +1034,13 @@
             }
 
             .site-nav {
-                position: fixed;
+                position: absolute;
                 top: calc(var(--header-h) + 4px);
                 left: 1rem;
                 width: 85%;
                 max-width: 300px;
                 display: block;
-                background: linear-gradient(165deg, rgba(13, 59, 46, 0.97), rgba(8, 40, 31, 0.98));
+                background: linear-gradient(165deg, #0d3b2e, #08281f);
                 -webkit-backdrop-filter: blur(30px);
                 backdrop-filter: blur(30px);
                 border-radius: 1.5rem;
@@ -1054,7 +1054,20 @@
                 transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
                 z-index: 999;
                 max-height: calc(100vh - var(--header-h) - 2rem);
-                overflow-y: auto;
+                overflow: visible;
+            }
+
+            /* ===== ذيل الرسالة: مثلث يتدلى من زر القائمة إلى البطاقة ===== */
+            .site-nav::before {
+                content: "";
+                position: absolute;
+                top: -15px;
+                left: 16px;
+                width: 0;
+                height: 0;
+                border-left: 14px solid transparent;
+                border-right: 14px solid transparent;
+                border-bottom: 21px solid #0d3b2e;
             }
 
             .site-nav.open {
@@ -1242,17 +1255,6 @@
 
             <div class="row">
                 <div class="row-text">
-                    <div class="row-title">إشعارات المتصفح</div>
-                    <div class="row-sub" id="notifState">غير مفعّلة</div>
-                </div>
-                <button class="btn-gold" id="notifBtn" type="button">
-                    <i class="fas fa-bell"></i>
-                    تفعيل الإشعارات
-                </button>
-            </div>
-
-            <div class="row">
-                <div class="row-text">
                     <div class="row-title">تجربة التنبيه</div>
                     <div class="row-sub">شغّل النافذة والصوت الآن</div>
                 </div>
@@ -1264,7 +1266,7 @@
 
             <p class="note">
                 <i class="fas fa-circle-info"></i>
-                <span>يعمل التذكير أثناء فتح الصفحة في المتصفح — أبقِ التبويب مفتوحًا أو فعّل الإشعارات للعمل في الخلفية.</span>
+                <span>يعمل التذكير أثناء فتح التطبيق — يظهر إشعار بعدّاد تنازلي حتى موعد الصلاة وبعدها، ويمكنك إغلاقه أو إزاحته كما في تطبيقات الهاتف.</span>
             </p>
         </section>
 
@@ -1454,7 +1456,7 @@
             { key: 'isha',    ar: 'العشاء',  icon: 'fa-star' }
         ];
 
-        const LEADS = [30, 15, 10, 5, 1];
+        const LEADS = [60, 30, 15, 10, 5, 1];
         const ADHAN_LEAD = 0;
 
         function minWord(n) {
@@ -2046,21 +2048,159 @@
             m.setAttribute('aria-hidden', 'true');
         }
 
-        function sendNotification(title, body) {
+        // ===== جسر التطبيق الأصلي (Android) =====
+        function nativeApp() {
+            try {
+                return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SalatNative) || null;
+            } catch (e) { return null; }
+        }
+
+        const NOTIF_ICON = 'icons/icon-192.png';
+
+        function appNotify(title, body, tag) {
+            const nb = nativeApp();
+            if (nb) {
+                try { nb.notify({ tag: tag || 'salat-reminder', title: title, body: body }); } catch (e) {}
+                return;
+            }
             if (!('Notification' in window)) return;
             if (Notification.permission !== 'granted') return;
-            try { new Notification(title, { body: body, tag: 'salat-reminder' }); } catch (e) {}
+            const opts = {
+                body: body,
+                tag: tag || 'salat-reminder',
+                icon: NOTIF_ICON,
+                badge: NOTIF_ICON
+            };
+            const fallback = function () {
+                try { new Notification(title, opts); } catch (e) {}
+            };
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(function (reg) {
+                    reg.showNotification(title, opts).catch(fallback);
+                }).catch(fallback);
+            } else {
+                fallback();
+            }
         }
 
         function fireReminder(ev) {
             if (ev.isAdhan) {
                 openModal('حان الآن وقت ' + ev.title, 'الأذان — ' + ev.timeStr, ev.timeStr);
-                sendNotification('حان الآن وقت ' + ev.title, 'الأذان عند ' + ev.timeStr);
             } else {
                 openModal(ev.title, `تبقّى ${minWord(ev.lead)} — الأذان عند ${ev.timeStr}`, ev.timeStr);
-                sendNotification('تذكير ' + ev.title, `تبقّى ${minWord(ev.lead)} على الصلاة — ${ev.timeStr}`);
             }
             playSound();
+        }
+
+        // ===== إشعار العدّاد التنازلي (كإشعارات تطبيقات الهاتف) =====
+        const CD_TAG = 'salat-countdown';
+        const CD_GRACE = 15; // دقائق يبقى فيها الإشعار بعد دخول وقت الصلاة
+        let cdPrayer = '';   // معرّف الصلاة الحالية للإشعار
+        let cdLast = '';     // آخر نص معروض (منع التكرار)
+        let cdShown = false; // هل عُرض الإشعار فعلًا
+        let cdGone = false;  // هل أزاله المستخدم (لا نعود لحد انتهاء نافذتها)
+
+        function cdPlural(n) {
+            if (n === 1) return 'دقيقة واحدة';
+            if (n === 2) return 'دقيقتان';
+            if (n >= 3 && n <= 10) return n + ' دقائق';
+            return n + ' دقيقة';
+        }
+
+        function cdReset(id) {
+            if (cdPrayer !== id) {
+                cdPrayer = id;
+                cdLast = '';
+                cdShown = false;
+                cdGone = false;
+            }
+        }
+
+        function cdNotify(title, body) {
+            if (cdGone) return;
+            const nb = nativeApp();
+            if (nb) {
+                const key = title + '|' + body;
+                if (key === cdLast) return;
+                try {
+                    nb.notify({ tag: CD_TAG, title: title, body: body });
+                    cdShown = true;
+                    cdLast = key;
+                } catch (e) {}
+                return;
+            }
+            if (!('Notification' in window)) return;
+            if (Notification.permission !== 'granted') return;
+            const key = title + '|' + body;
+            if (key === cdLast) return;
+            const opts = {
+                body: body,
+                tag: CD_TAG,
+                icon: NOTIF_ICON,
+                badge: NOTIF_ICON
+            };
+            const fallback = function () {
+                try { new Notification(title, opts); cdShown = true; cdLast = key; } catch (e) {}
+            };
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(function (reg) {
+                    return reg.getNotifications({ tag: CD_TAG }).then(function (list) {
+                        // المستخدم أزال الإشعار → لا نعيد عرضه لهذه الصلاة
+                        if (cdShown && !list.length) { cdGone = true; return; }
+                        return reg.showNotification(title, opts).then(function () {
+                            cdShown = true;
+                            cdLast = key;
+                        });
+                    });
+                }).catch(fallback);
+            } else {
+                fallback();
+            }
+        }
+
+        function cdClose() {
+            if (!cdShown || cdGone) return;
+            const nb = nativeApp();
+            if (nb) {
+                try { nb.closeNotify({ tag: CD_TAG }); } catch (e) {}
+                cdShown = false;
+                cdLast = '';
+                return;
+            }
+            if (!('serviceWorker' in navigator)) { cdShown = false; cdLast = ''; return; }
+            navigator.serviceWorker.ready.then(function (reg) {
+                return reg.getNotifications({ tag: CD_TAG });
+            }).then(function (list) {
+                (list || []).forEach(function (n) { n.close(); });
+                cdShown = false;
+                cdLast = '';
+            }).catch(function () {});
+        }
+
+        function updateCountdown(now) {
+            if (!state.enabled) { cdClose(); return; }
+            const evs = getAllEvents(now);
+            let target = null, phase = '', val = 0;
+            for (const ev of evs) {
+                if (!ev.isAdhan) continue;
+                if (state.off.indexOf(ev.key) !== -1) continue;
+                const leads = state.chips[ev.key] || [];
+                const thr = leads.length ? leads[0] : 0; // أكبر مدة مختارة (تنازلي)
+                const dt = ev.at - now;
+                if (dt > 0 && thr > 0 && Math.ceil(dt / 60000) <= thr) {
+                    target = ev; phase = 'count'; val = Math.ceil(dt / 60000); break;
+                }
+                if (dt <= 0 && -dt < CD_GRACE * 60000) {
+                    target = ev; phase = 'now'; break;
+                }
+            }
+            if (!target) { cdClose(); return; }
+            cdReset(target.id + (phase === 'count' ? '|c' : '|n'));
+            if (phase === 'count') {
+                cdNotify('بقي على ' + target.title, cdPlural(val) + ' — عند ' + target.timeStr);
+            } else {
+                cdNotify('حان الآن وقت ' + target.title, 'الأذان عند ' + target.timeStr);
+            }
         }
 
         // ===== المجدول =====
@@ -2075,6 +2215,8 @@
                 fired.clear();
                 updateCards();
             }
+
+            updateCountdown(now);
 
             if (!state.enabled) return;
 
@@ -2113,36 +2255,6 @@
         document.addEventListener('keydown', unlockAudio, { once: true });
         document.addEventListener('touchstart', unlockAudio, { once: true });
 
-        // ===== الإشعارات =====
-        function notifStatusText() {
-            if (!('Notification' in window)) return 'غير مدعومة في هذا المتصفح';
-            if (Notification.permission === 'granted') return 'مفعّلة ✓';
-            if (Notification.permission === 'denied') return 'محظورة من إعدادات المتصفح';
-            return 'غير مفعّلة';
-        }
-
-        function refreshNotifUI() {
-            $('notifState').textContent = notifStatusText();
-            const granted = ('Notification' in window) && Notification.permission === 'granted';
-            $('notifBtn').disabled = granted;
-            if (granted) $('notifBtn').innerHTML = '<i class="fas fa-check"></i> الإشعارات مفعّلة';
-        }
-
-        async function askNotifications() {
-            if (!('Notification' in window)) {
-                showToast('المتصفح لا يدعم الإشعارات');
-                return;
-            }
-            try {
-                const res = await Notification.requestPermission();
-                refreshNotifUI();
-                if (res === 'granted') showToast('تم تفعيل الإشعارات');
-                else if (res === 'denied') showToast('تم رفض الإشعارات — يمكنك تغييرها من المتصفح');
-            } catch (e) {
-                showToast('تعذر طلب الإشعارات');
-            }
-        }
-
         // ===== الأحداث والتفاعلات =====
         function bindEvents() {
             // المفتاح الرئيسي
@@ -2155,9 +2267,6 @@
                 showToast(state.enabled ? 'تم تفعيل التذكيرات' : 'تم إيقاف التذكيرات');
             });
 
-            // الإشعارات
-            $('notifBtn').addEventListener('click', askNotifications);
-
             // تجربة التنبيه
             $('testBtn').addEventListener('click', () => {
                 const now = new Date();
@@ -2168,6 +2277,7 @@
                 } else {
                     openModal('تجربة التنبيه', 'اختر شرائح التذكير أولًا', '--:--');
                 }
+                appNotify('تجربة التنبيه', 'هكذا سيصلك إشعار العدّاد التنازلي قبل الصلاة', 'salat-test');
                 playSound();
             });
 
@@ -2342,7 +2452,6 @@
             renderSoundList();
             renderRepeatChips();
             renderPrayerCards();
-            refreshNotifUI();
 
             lastDayKey = new Date().toDateString();
             tick();
@@ -2377,6 +2486,16 @@
                 }).catch(function () {});
             }, { once: true });
         }
+
+        // إذن إشعارات التطبيق الأصلي (Android) عند أول لمسة
+        document.addEventListener('pointerdown', function () {
+            try {
+                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SalatNative) {
+                    window.Capacitor.Plugins.SalatNative.requestPermission();
+                }
+            } catch (e) {}
+        }, { once: true });
+
 
     </script>
 </body>

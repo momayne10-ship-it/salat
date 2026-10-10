@@ -845,13 +845,13 @@
             }
 
             .site-nav {
-                position: fixed;
+                position: absolute;
                 top: calc(var(--header-h) + 4px);
                 left: 1rem;
                 width: 85%;
                 max-width: 300px;
                 display: block;
-                background: linear-gradient(165deg, rgba(13, 59, 46, 0.97), rgba(8, 40, 31, 0.98));
+                background: linear-gradient(165deg, #0d3b2e, #08281f);
                 -webkit-backdrop-filter: blur(30px);
                 backdrop-filter: blur(30px);
                 border-radius: 1.5rem;
@@ -865,7 +865,20 @@
                 transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
                 z-index: 999;
                 max-height: calc(100vh - var(--header-h) - 2rem);
-                overflow-y: auto;
+                overflow: visible;
+            }
+
+            /* ===== ذيل الرسالة: مثلث يتدلى من زر القائمة إلى البطاقة ===== */
+            .site-nav::before {
+                content: "";
+                position: absolute;
+                top: -15px;
+                left: 16px;
+                width: 0;
+                height: 0;
+                border-left: 14px solid transparent;
+                border-right: 14px solid transparent;
+                border-bottom: 21px solid #0d3b2e;
             }
 
             .site-nav.open {
@@ -1522,7 +1535,24 @@
             sw.setAttribute('aria-checked', String(!!s.enabled));
         }
 
+        // ===== جسر التطبيق الأصلي (Android) =====
+        function nativeApp() {
+            try {
+                return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SalatNative) || null;
+            } catch (e) { return null; }
+        }
+
         function refreshNotifUI() {
+            const nb = nativeApp();
+            if (nb) {
+                try {
+                    nb.state().then(r => {
+                        $('notifState').textContent = r.granted ? 'مفعّلة' : 'غير مفعّلة';
+                        $('notifBtn').hidden = !!r.granted;
+                    }).catch(() => {});
+                } catch (e) {}
+                return;
+            }
             if (!('Notification' in window)) {
                 $('notifState').textContent = 'غير مدعومة في هذا المتصفح';
                 $('notifBtn').hidden = true;
@@ -1542,6 +1572,17 @@
         }
 
         function askNotifications() {
+            const nb = nativeApp();
+            if (nb) {
+                try {
+                    nb.requestPermission().then(r => {
+                        refreshNotifUI();
+                        setTimeout(refreshNotifUI, 1500);
+                        showToast(r && r.granted ? 'تم تفعيل الإشعارات' : 'اضغط «سماح» في نافذة الإذن');
+                    }).catch(() => showToast('تعذر طلب الإشعارات'));
+                } catch (e) {}
+                return;
+            }
             try {
                 Notification.requestPermission().then(res => {
                     refreshNotifUI();
@@ -1809,8 +1850,18 @@
             $('notifBtn').addEventListener('click', askNotifications);
 
             $('testBtn').addEventListener('click', () => {
+                const nb = nativeApp();
+                if (nb) {
+                    try { nb.notify({ tag: 'salat-test', title: 'تذكير تجريبي', body: 'هكذا سيصلك التنبيه قبل الصلاة' }); } catch (e) {}
+                    showToast('تم تشغيل تجربة التنبيه');
+                    return;
+                }
                 if ('Notification' in window && Notification.permission === 'granted') {
-                    try { new Notification('تذكير تجريبي', { body: 'هكذا سيصلك التنبيه قبل الصلاة', tag: 'salat-test' }); } catch (e) {}
+                    const opts = { body: 'هكذا سيصلك التنبيه قبل الصلاة', tag: 'salat-test', icon: 'icons/icon-192.png', badge: 'icons/icon-192.png' };
+                    const fb = () => { try { new Notification('تذكير تجريبي', opts); } catch (e) {} };
+                    if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.ready.then(r => r.showNotification('تذكير تجريبي', opts)).catch(fb);
+                    } else { fb(); }
                 }
                 showToast('تم تشغيل تجربة التنبيه');
             });
@@ -1846,6 +1897,15 @@
                 }).catch(function () {});
             }, { once: true });
         }
+
+        // إذن إشعارات التطبيق الأصلي (Android) عند أول لمسة
+        document.addEventListener('pointerdown', function () {
+            try {
+                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SalatNative) {
+                    window.Capacitor.Plugins.SalatNative.requestPermission();
+                }
+            } catch (e) {}
+        }, { once: true });
 
         // تثبيت التطبيق
         var deferredPrompt = null;

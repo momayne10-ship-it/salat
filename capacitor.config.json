@@ -1,0 +1,11 @@
+{
+  "appId": "com.gmsoft.salat",
+  "appName": "صلاتي",
+  "webDir": "www",
+  "backgroundColor": "#0d3b2e",
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}
